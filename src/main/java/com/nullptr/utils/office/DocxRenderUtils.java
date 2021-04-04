@@ -1,0 +1,328 @@
+package com.nullptr.utils.office;
+
+import com.deepoove.poi.XWPFTemplate;
+import com.deepoove.poi.data.DocxRenderData;
+import com.deepoove.poi.data.RenderData;
+import com.deepoove.poi.data.TextRenderData;
+import com.deepoove.poi.template.ElementTemplate;
+import com.deepoove.poi.template.MetaTemplate;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
+
+/**
+ * word工具类，仅支持docx格式文档
+ *
+ * @author 马佳乐
+ * @version 1.0 2021-1-17
+ * @version 1.1 2020-1-22
+ * @version 1.2 2020-3-15
+ * @since 4.2.1
+ */
+public class DocxRenderUtils {
+    /**
+     * 根据模板文件合并多个文件
+     *
+     * @param outputStream 渲染结果输出流
+     * @param templateFile 模板文件
+     * @param destFiles 待合并文件
+     * @throws IOException 写入错误时触发
+     * @since 1.0
+     */
+    public static void mergeFiles(@NotNull OutputStream outputStream, @NotNull File templateFile,
+                                  File... destFiles) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFile);
+        Map<String, RenderData> placeholderMap = getTagNameMap(template, getRenderDataList(destFiles));
+        writeToStream(template, placeholderMap, outputStream);
+    }
+
+    /**
+     * 根据模板文件合并多个文件
+     *
+     * @param outputStream 渲染结果输出流
+     * @param templateInputStream 模板文件输入流
+     * @param destFiles 待合并文件
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void mergeFiles(@NotNull OutputStream outputStream, @NotNull InputStream templateInputStream,
+                                  File... destFiles) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateInputStream);
+        Map<String, RenderData> placeholderMap = getTagNameMap(template, getRenderDataList(destFiles));
+        writeToStream(template, placeholderMap, outputStream);
+    }
+
+    /**
+     * 根据模板文件合并多个文件
+     *
+     * @param outputStream 渲染结果输出流
+     * @param templateFilePath 模板文件路径
+     * @param destFiles 待合并文件
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void mergeFiles(@NotNull OutputStream outputStream, @NotEmpty String templateFilePath,
+                                  File... destFiles) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFilePath);
+        Map<String, RenderData> placeholderMap = getTagNameMap(template, getRenderDataList(destFiles));
+        writeToStream(template, placeholderMap, outputStream);
+    }
+
+    /**
+     * 根据模板文件合并多个文件
+     *
+     * @param outputFile 渲染结果输出文件
+     * @param templateFile 模板文件
+     * @param destFiles 待合并文件
+     * @throws IOException 写入错误时触发
+     * @since 1.0
+     */
+    public static void mergeFiles(@NotNull File outputFile, @NotNull File templateFile,
+                                  File... destFiles) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFile);
+        Map<String, RenderData> placeholderMap = getTagNameMap(template, getRenderDataList(destFiles));
+        writeToFile(template, placeholderMap, outputFile);
+    }
+
+    /**
+     * 根据模板文件合并多个文件
+     *
+     * @param outputFile 渲染结果输出文件
+     * @param templateInputStream 模板文件输入流
+     * @param destFiles 待合并文件
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void mergeFiles(@NotNull File outputFile, @NotNull InputStream templateInputStream,
+                                  File... destFiles) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateInputStream);
+        Map<String, RenderData> placeholderMap = getTagNameMap(template, getRenderDataList(destFiles));
+        writeToFile(template, placeholderMap, outputFile);
+    }
+
+    /**
+     * 根据模板文件合并多个文件
+     *
+     * @param outputFile 渲染结果输出文件
+     * @param templateFilePath 模板文件路径
+     * @param destFiles 待合并文件
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void mergeFiles(@NotNull File outputFile, @NotEmpty String templateFilePath,
+                                  File... destFiles) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFilePath);
+        Map<String, RenderData> placeholderMap = getTagNameMap(template, getRenderDataList(destFiles));
+        writeToFile(template, placeholderMap, outputFile);
+    }
+
+    /**
+     * 替换模板文件中的标签，并渲染结果至流中
+     *
+     * @param outputStream 渲染结果输出流
+     * @param templateInputStream 模板文件输入流
+     * @param tagNameMap 占位符映射
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void renderTags(@NotNull OutputStream outputStream, @NotNull InputStream templateInputStream,
+                                  @NotNull Map<String, RenderData> tagNameMap) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateInputStream);
+        writeToStream(template, tagNameMap, outputStream);
+    }
+
+    /**
+     * 替换模板文件中的标签，并渲染结果至流中
+     *
+     * @param outputStream 渲染结果输出流
+     * @param templateFile 模板文件
+     * @param tagNameMap 占位符映射
+     * @throws IOException 写入错误时触发
+     * @since 1.0
+     */
+    public static void renderTags(@NotNull OutputStream outputStream, @NotNull File templateFile,
+                                  @NotNull Map<String, RenderData> tagNameMap) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFile);
+        writeToStream(template, tagNameMap, outputStream);
+    }
+
+    /**
+     * 替换模板文件中的标签，并渲染结果至流中
+     *
+     * @param outputStream 渲染结果输出流
+     * @param templateFilePath 模板文件路径
+     * @param tagNameMap 占位符映射
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void renderTags(@NotNull OutputStream outputStream, @NotEmpty String templateFilePath,
+                                  @NotNull Map<String, RenderData> tagNameMap) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFilePath);
+        writeToStream(template, tagNameMap, outputStream);
+    }
+
+    /**
+     * 替换模板文件中的标签，并渲染结果至文件中
+     *
+     * @param outputFile 渲染结果输出文件
+     * @param templateFile 模板文件
+     * @param tagNameMap 待渲染占位符映射
+     * @throws IOException 写入错误时触发
+     * @since 1.0
+     */
+    public static void renderTags(@NotNull File outputFile, @NotNull File templateFile,
+                                  @NotNull Map<String, RenderData> tagNameMap) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFile);
+        writeToFile(template, tagNameMap, outputFile);
+    }
+
+    /**
+     * 替换模板文件中的标签，并渲染结果至文件中
+     *
+     * @param outputFile 渲染结果输出文件
+     * @param templateInputStream 模板文件输入流
+     * @param tagNameMap 待渲染占位符映射
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void renderTags(@NotNull File outputFile, @NotNull InputStream templateInputStream,
+                                  @NotNull Map<String, RenderData> tagNameMap) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateInputStream);
+        writeToFile(template, tagNameMap, outputFile);
+    }
+
+    /**
+     * 替换模板文件中的标签，并渲染结果至文件中
+     *
+     * @param outputFile 渲染结果输出文件
+     * @param templateFilePath 模板文件路径
+     * @param tagNameMap 待渲染占位符映射
+     * @throws IOException 写入错误时触发
+     * @since 1.2
+     */
+    public static void renderTags(@NotNull File outputFile, @NotEmpty String templateFilePath,
+                                  @NotNull Map<String, RenderData> tagNameMap) throws IOException {
+        XWPFTemplate template = XWPFTemplate.compile(templateFilePath);
+        writeToFile(template, tagNameMap, outputFile);
+    }
+
+    /**
+     * 获取模板文件中的占位符标签名列表
+     *
+     * @param template 模板文件
+     * @return 占位符标签名列表
+     * @since 1.1
+     */
+    public static List<String> getTagNameList(@NotNull XWPFTemplate template) {
+        List<MetaTemplate> metaTemplateList = template.getElementTemplates();
+        List<String> tagNameList = new ArrayList<>(metaTemplateList.size());
+        metaTemplateList.forEach(metaTemplate -> {
+            ElementTemplate elementTemplate = (ElementTemplate) metaTemplate;
+            tagNameList.add(elementTemplate.getTagName());
+        });
+        return tagNameList;
+    }
+
+    /**
+     * 获取docx渲染数据
+     *
+     * @param docxFile 待渲染docx文件
+     * @return docx渲染数据
+     *
+     * @see DocxRenderData
+     * @since 1.1
+     */
+    public static DocxRenderData createRenderData(@NotNull File docxFile) {
+        return new DocxRenderData(docxFile);
+    }
+
+    /**
+     * 获取文本渲染数据
+     *
+     * @param text 待渲染文本数据
+     * @return 文本渲染数据
+     *
+     * @see TextRenderData
+     * @since 1.1
+     */
+    public static TextRenderData createRenderData(String text) {
+        return new TextRenderData(StringUtils.stripToEmpty(text));
+    }
+
+    /**
+     * 获取Docx渲染数据列表
+     *
+     * @param docxRenderFiles 待渲染文件
+     * @return Docx渲染数据列表
+     * @since 1.0
+     */
+    private static List<RenderData> getRenderDataList(File... docxRenderFiles) {
+        List<RenderData> docxRenderDataList = new ArrayList<>();
+        for (File destFile : docxRenderFiles) {
+            docxRenderDataList.add(createRenderData(destFile));
+        }
+        return docxRenderDataList;
+    }
+
+    /**
+     * 按顺序使用渲染数据对文件中占位符进行映射
+     *
+     * @param template 模板引擎对象
+     * @param renderDataList 待渲染对象列表
+     * @return 占位符映射（占位符名称：待替换内容）
+     * @since 1.0
+     */
+    private static Map<String, RenderData> getTagNameMap(XWPFTemplate template, List<RenderData> renderDataList) {
+        // 获取文件中全部占位符
+        List<String> tagNameList = getTagNameList(template);
+        Map<String, RenderData> tagNameMap = new HashMap<>(tagNameList.size());
+        // 遍历占位符名称和渲染数据
+        for (int i = 0; i < tagNameList.size(); i++) {
+            // 判断下标是否越界, 越界则退出循环
+            if (i > renderDataList.size()) {
+                break;
+            }
+            tagNameMap.put(tagNameList.get(i), renderDataList.get(i));
+        }
+        return tagNameMap;
+    }
+
+    /**
+     * 写入到流之中
+     *
+     * @param template 模板引擎对象
+     * @param tagNameMap 占位符映射
+     * @param outputStream 渲染结果输出流
+     * @throws IOException 写入错误时触发
+     * @since 1.0
+     */
+    private static void writeToStream(XWPFTemplate template, Map<String, RenderData> tagNameMap,
+                                      OutputStream outputStream) throws IOException {
+        template.render(tagNameMap);
+        template.write(outputStream);
+        outputStream.flush();
+        template.close();
+    }
+
+    /**
+     * 写入到文件中
+     *
+     * @param template 模板引擎对象
+     * @param tagNameMap 占位符映射
+     * @param outputFile 渲染结果输出文件
+     * @throws IOException 文件不存在或写入错误时触发
+     * @since 1.0
+     */
+    private static void writeToFile(XWPFTemplate template, Map<String, RenderData> tagNameMap,
+                                    File outputFile) throws IOException {
+        template.render(tagNameMap);
+        template.writeToFile(outputFile.getAbsolutePath());
+        template.close();
+    }
+}

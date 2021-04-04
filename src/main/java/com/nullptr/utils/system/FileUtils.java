@@ -1,8 +1,6 @@
 package com.nullptr.utils.system;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.Md5Crypt;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -18,15 +16,11 @@ import java.util.regex.Matcher;
  */
 public class FileUtils extends org.apache.commons.io.FileUtils {
     /** 文件路径分隔符 */
-    private static final String SPLIT = "/";
+    private static final String FILE_PATH_SEPARATOR = String.valueOf(File.separatorChar);
     /** 文件类型分隔符 */
     public static final String TYPE_SPLIT = ".";
     /** 默认字符集 */
     public static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
-    /** 当前用户目录 */
-    public static final String USER_HOME = System.getProperty("user.home");
-    /** 系统临时目录 */
-    public static final String TMP_HOME = System.getProperty("java.io.tmpdir");
 
     /** 构造方法私有化，防止生成实例 */
     protected FileUtils() {}
@@ -40,7 +34,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     public static String getFileName(String filePath) {
         filePath = replaceSplit(filePath);
-        int index = filePath.lastIndexOf(SPLIT);
+        int index = filePath.lastIndexOf(FILE_PATH_SEPARATOR);
         return filePath.substring(index + 1);
     }
 
@@ -56,7 +50,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         parentPath = replaceSplit(parentPath);
         filePath = replaceSplit(filePath);
         // 判断是否具备相对路径
-        return filePath.startsWith(SPLIT) ? parentPath + filePath : parentPath + SPLIT + filePath;
+        return filePath.startsWith(FILE_PATH_SEPARATOR) ? parentPath + filePath : parentPath + FILE_PATH_SEPARATOR + filePath;
     }
 
     /**
@@ -68,7 +62,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      */
     public static String getParentPath(String filePath) {
         filePath = replaceSplit(filePath);
-        int index = filePath.lastIndexOf(SPLIT);
+        int index = filePath.lastIndexOf(FILE_PATH_SEPARATOR);
         return filePath.substring(0, index);
     }
 
@@ -82,7 +76,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @since 1.0
      */
     public static String replaceSplit(String filePath) {
-        return filePath.replaceAll(Matcher.quoteReplacement("\\"), SPLIT);
+        return filePath.replaceAll(Matcher.quoteReplacement("\\"), FILE_PATH_SEPARATOR);
     }
 
     /**
@@ -308,4 +302,11 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         String fileType = getFileType(filePath);
         return Md5Crypt.md5Crypt(uuid.getBytes()) + TYPE_SPLIT + fileType;
     }
- }
+
+    public static void createDirectory(String path) throws IOException {
+        File file = new File(path);
+        if (!file.mkdir()) {
+            throw new IOException("文件夹创建失败");
+        }
+    }
+}

@@ -1,7 +1,6 @@
 package com.nullptr.utils.lang;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;

@@ -21,12 +21,12 @@ import org.apache.commons.logging.LogFactory;
  * @see Cipher
  * @see KeyGenerator
  */
-public class SecurityUtils {
+public class AESEncryptUtils {
     private static final String ALGORITHM_NAME = "AES";
     private static final Base64 BASE_64 = new Base64();
-    private static final Log log = LogFactory.getLog(SecurityUtils.class);
+    private static final Log log = LogFactory.getLog(AESEncryptUtils.class);
 
-    private SecurityUtils() {
+    private AESEncryptUtils() {
     }
 
     /**
