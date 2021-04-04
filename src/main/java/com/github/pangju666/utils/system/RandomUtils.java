@@ -8,15 +8,16 @@ import java.util.UUID;
  *
  * @author nullptr
  * @version 1.0 2020-3-31
- * @version 1.1 继承org.apache.commons.lang3.RandomUtils，增加获取随机中文和UUID
  * @since 1.0
  *
  * @see org.apache.commons.lang3.RandomUtils
  */
 public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
+    private static final Integer ASCII_MIN = 0;
+    private static final Integer ASCII_MAX = 127;
     protected static final Random RANDOM = new Random();
 
-    private RandomUtils() {
+    protected RandomUtils() {
     }
 
     /**
@@ -29,6 +30,17 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      */
     public static int nextInt(int bound) {
         return RANDOM.nextInt(bound);
+    }
+
+    /**
+     * 生成指定范围内的字符(ascii表内)
+     *
+     * @return 返回随机字符
+     *
+     * @since 1.0
+     */
+    public static char nextCharacter() {
+        return (char) (nextInt(ASCII_MIN, ASCII_MAX));
     }
 
     /**
@@ -49,7 +61,7 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      *
      * @since 1.0
      */
-    public static char nextNumber() {
+    public static char nextNumberCharacter() {
         return nextCharacter('0', '9');
     }
 
@@ -58,7 +70,7 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      *
      * @since 1.0
      */
-    public static char nextLetter() {
+    public static char nextLetterCharacter() {
         return nextCharacter('A', 'z');
     }
 
@@ -67,43 +79,62 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      *
      * @since 1.0
      */
-    public static char nextLetterOrNumber() {
+    public static char nextLetterOrNumberCharacter() {
         if (RandomUtils.nextBoolean()) {
             return RandomUtils.nextCharacter('0', '9');
         } else {
-            return RandomUtils.nextLetter();
+            return RandomUtils.nextLetterCharacter();
         }
     }
 
     /**
      * 生成随机大写字母
-     * @since 1.1
+     *
+     * @since 1.0
      */
-    public static char nextUppercase() {
+    public static char nextUppercaseCharacter() {
         return nextCharacter('A', 'Z');
     }
 
     /**
      * 生成随机小写字母
-     * @since 1.1
+     *
+     * @since 1.0
      */
-    public static char nextLowerCase() {
+    public static char nextLowerCaseCharacter() {
         return nextCharacter('a', 'z');
     }
 
     /**
-     * 生成随机中文字符
-     * @since 1.1
+     * 生成随机特殊字符
+     *
+     * @since 1.0
      */
-    public static char nextChinese() {
+    public static char nextSpecialCharacter() {
+        int range = nextInt(4);
+        switch (range) {
+            case 1: return RandomUtils.nextCharacter('!', '/');
+            case 2: return RandomUtils.nextCharacter(':', '@');
+            case 3: return RandomUtils.nextCharacter('[', '`');
+            default: return RandomUtils.nextCharacter('{', '~');
+        }
+    }
+
+    /**
+     * 生成随机中文字符
+     *
+     * @since 1.0
+     */
+    public static char nextChineseCharacter() {
         return nextCharacter('\u4e00', '\u9fa5');
     }
 
     /**
      * 生成随机的UUID
-     * @since 1.1
+     *
+     * @since 1.0
      */
-    public static String nexUUID() {
+    public static String nexUUIDString() {
         return UUID.randomUUID().toString();
     }
 }

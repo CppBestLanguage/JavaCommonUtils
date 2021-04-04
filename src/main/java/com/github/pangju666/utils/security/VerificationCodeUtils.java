@@ -58,9 +58,9 @@ public final class VerificationCodeUtils {
      */
     static Generator getGenerator(final Mode mode) {
         switch(mode) {
-            case NUMBER: return RandomUtils::nextNumber;
-            case MIX: return RandomUtils::nextLetter;
-            default: return RandomUtils::nextLetterOrNumber;
+            case NUMBER: return RandomUtils::nextNumberCharacter;
+            case MIX: return RandomUtils::nextLetterCharacter;
+            default: return RandomUtils::nextLetterOrNumberCharacter;
         }
     }
 

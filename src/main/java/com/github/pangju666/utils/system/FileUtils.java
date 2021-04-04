@@ -3,7 +3,6 @@ package com.github.pangju666.utils.system;
 import org.apache.commons.codec.digest.Md5Crypt;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.util.UUID;
 import java.util.regex.Matcher;
 
@@ -11,16 +10,14 @@ import java.util.regex.Matcher;
  * 文件处理工具，主要包含写入和读取文件数据
  *
  * @author nullptr
- * @version 1.0 2020-11-16 重写
- * @since 1.2
+ * @version 1.0 2020-11-16
+ * @since 1.0
  */
 public class FileUtils extends org.apache.commons.io.FileUtils {
     /** 文件路径分隔符 */
     private static final String FILE_PATH_SEPARATOR = String.valueOf(File.separatorChar);
     /** 文件类型分隔符 */
     public static final String TYPE_SPLIT = ".";
-    /** 默认字符集 */
-    public static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
 
     /** 构造方法私有化，防止生成实例 */
     protected FileUtils() {}

@@ -7,17 +7,14 @@ import org.apache.commons.logging.LogFactory;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
- * 系统进程工具
+ * 系统进程工具类
  *
  * @author nullptr
  * @version 1.0 2020-9-24
- * @since 1.0 2020-9-24
+ * @since 1.0
  */
 public class ProcessUtils {
     /** 获取系统运行环境 */
@@ -63,10 +60,10 @@ public class ProcessUtils {
            }
         } catch (ExecutionException e) {
             e.printStackTrace();
+            return "";
         } finally {
             process.destroy();
         }
-        return "";
     }
 
     /**

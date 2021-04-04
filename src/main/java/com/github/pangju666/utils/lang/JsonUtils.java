@@ -1,10 +1,5 @@
 package com.github.pangju666.utils.lang;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import java.util.List;
-
 /**
  * JSON字符串转换器接口
  *
@@ -13,11 +8,4 @@ import java.util.List;
  * @since 1.0 2019-12-27
  */
 public class JsonUtils<T> {
-    public static <T extends JSONCovert> JSONArray toArray(List<T> jsonList) {
-        JSONArray array = new JSONArray();
-        for (JSONCovert jsonCovert : jsonList) {
-            array.add(jsonCovert.toJSON());
-        }
-        return array;
-    }
 }

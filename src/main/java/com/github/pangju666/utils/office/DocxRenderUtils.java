@@ -17,13 +17,11 @@ import java.io.OutputStream;
 import java.util.*;
 
 /**
- * word工具类，仅支持docx格式文档
+ * 文档渲染工具类，仅支持docx格式文档
  *
- * @author 马佳乐
+ * @author pangju
  * @version 1.0 2021-1-17
- * @version 1.1 2020-1-22
- * @version 1.2 2020-3-15
- * @since 4.2.1
+ * @since 1.0
  */
 public class DocxRenderUtils {
     /**
@@ -49,7 +47,7 @@ public class DocxRenderUtils {
      * @param templateInputStream 模板文件输入流
      * @param destFiles 待合并文件
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void mergeFiles(@NotNull OutputStream outputStream, @NotNull InputStream templateInputStream,
                                   File... destFiles) throws IOException {
@@ -65,7 +63,7 @@ public class DocxRenderUtils {
      * @param templateFilePath 模板文件路径
      * @param destFiles 待合并文件
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void mergeFiles(@NotNull OutputStream outputStream, @NotEmpty String templateFilePath,
                                   File... destFiles) throws IOException {
@@ -97,7 +95,7 @@ public class DocxRenderUtils {
      * @param templateInputStream 模板文件输入流
      * @param destFiles 待合并文件
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void mergeFiles(@NotNull File outputFile, @NotNull InputStream templateInputStream,
                                   File... destFiles) throws IOException {
@@ -113,7 +111,7 @@ public class DocxRenderUtils {
      * @param templateFilePath 模板文件路径
      * @param destFiles 待合并文件
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void mergeFiles(@NotNull File outputFile, @NotEmpty String templateFilePath,
                                   File... destFiles) throws IOException {
@@ -129,7 +127,7 @@ public class DocxRenderUtils {
      * @param templateInputStream 模板文件输入流
      * @param tagNameMap 占位符映射
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void renderTags(@NotNull OutputStream outputStream, @NotNull InputStream templateInputStream,
                                   @NotNull Map<String, RenderData> tagNameMap) throws IOException {
@@ -159,7 +157,7 @@ public class DocxRenderUtils {
      * @param templateFilePath 模板文件路径
      * @param tagNameMap 占位符映射
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void renderTags(@NotNull OutputStream outputStream, @NotEmpty String templateFilePath,
                                   @NotNull Map<String, RenderData> tagNameMap) throws IOException {
@@ -189,7 +187,7 @@ public class DocxRenderUtils {
      * @param templateInputStream 模板文件输入流
      * @param tagNameMap 待渲染占位符映射
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void renderTags(@NotNull File outputFile, @NotNull InputStream templateInputStream,
                                   @NotNull Map<String, RenderData> tagNameMap) throws IOException {
@@ -204,7 +202,7 @@ public class DocxRenderUtils {
      * @param templateFilePath 模板文件路径
      * @param tagNameMap 待渲染占位符映射
      * @throws IOException 写入错误时触发
-     * @since 1.2
+     * @since 1.0
      */
     public static void renderTags(@NotNull File outputFile, @NotEmpty String templateFilePath,
                                   @NotNull Map<String, RenderData> tagNameMap) throws IOException {
@@ -217,7 +215,7 @@ public class DocxRenderUtils {
      *
      * @param template 模板文件
      * @return 占位符标签名列表
-     * @since 1.1
+     * @since 1.0
      */
     public static List<String> getTagNameList(@NotNull XWPFTemplate template) {
         List<MetaTemplate> metaTemplateList = template.getElementTemplates();
@@ -236,7 +234,7 @@ public class DocxRenderUtils {
      * @return docx渲染数据
      *
      * @see DocxRenderData
-     * @since 1.1
+     * @since 1.0
      */
     public static DocxRenderData createRenderData(@NotNull File docxFile) {
         return new DocxRenderData(docxFile);
@@ -249,7 +247,7 @@ public class DocxRenderUtils {
      * @return 文本渲染数据
      *
      * @see TextRenderData
-     * @since 1.1
+     * @since 1.0
      */
     public static TextRenderData createRenderData(String text) {
         return new TextRenderData(StringUtils.stripToEmpty(text));
