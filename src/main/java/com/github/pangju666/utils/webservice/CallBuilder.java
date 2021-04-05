@@ -27,8 +27,8 @@ import java.rmi.RemoteException;
  * String result = CallBuilder.newInstance("http://www.pangju666.com/webservice/services?wsdl")
  *                 .operationName("testAction")
  *                 .SOAPActionURI("http://www.pangju666.com/webservice/services/testAction")
- *                 .addParameter("testParam", XMLType.XSD_STRING)
- *                 .invoke(XMLType.XSD_STRING, String.class, "test");
+ *                 .addParameter("testParam", XMLType.SOAP_STRING)
+ *                 .invoke(XMLType.SOAP_STRING, String.class, "test");
  * </pre>
  * <p>
  *

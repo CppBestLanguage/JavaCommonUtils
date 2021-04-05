@@ -111,7 +111,7 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      * @since 1.0
      */
     public static char nextSpecialCharacter() {
-        int range = nextInt(4);
+        int range = nextInt(3);
         switch (range) {
             case 1: return RandomUtils.nextCharacter('!', '/');
             case 2: return RandomUtils.nextCharacter(':', '@');

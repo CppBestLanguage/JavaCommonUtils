@@ -37,45 +37,118 @@ public class ProcessUtils {
     }
 
     /**
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
+     *
+     * @param command 系统命令字符串
+     * @param data 输入数据，主要用于实现管道输入操作
+     * @param charset 命令处理字符集
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
+     * @since 1.0
+     */
+    public static void execute(String command, byte[] data, Charset charset,
+                                 Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+       executeCommand(command, data, charset, inputCallback, errorCallback);
+    }
+
+    /**
      * 执行系统命令，并使用指定字符编码获取执行结果
      *
      * @param command 系统命令字符串
-     * @return 命令执行结果
+     * @param data 输入数据，主要用于实现管道输入操作
+     * @param charset 命令处理字符集
+     * @return 命令执行结果，执行失败则返回空
      * @since 1.0
      */
-    public static String execute(String command)
+    public static String execute(String command, byte[] data, Charset charset)
             throws IOException, InterruptedException {
-        // 获取命令执行的进程
-        Process process = SYS_RUNTIME.exec(command);
-        Future<String> future1 = EXECUTOR.submit(()-> IOUtils.toString(process.getInputStream(), SYS_CHARSET));
-        Future<String> future2 = EXECUTOR.submit(()-> IOUtils.toString(process.getErrorStream(), SYS_CHARSET));
+        return executeCommand(command, data, charset, null, null);
+    }
 
-        process.waitFor();
-        int exitCode =  process.exitValue();
-        try {
-           if (exitCode == 0) {
-               return future1.get();
-           } else {
-               return future2.get();
-           }
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            return "";
-        } finally {
-            process.destroy();
-        }
+    /**
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
+     *
+     * @param command 系统命令字符串
+     * @param bytes 输入流，主要用于实现管道输入操作
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
+     * @since 1.0
+     */
+    public static void execute(String command, byte[] bytes, Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+        execute(command, bytes, SYS_CHARSET, inputCallback, errorCallback);
+    }
+
+    /**
+     * 执行系统命令，并使用指定字符编码获取执行结果
+     *
+     * @param command 系统命令字符串
+     * @param bytes 输入流，主要用于实现管道输入操作
+     * @return 命令执行结果，执行失败则返回空
+     * @since 1.0
+     */
+    public static String execute(String command, byte[] bytes)
+            throws IOException, InterruptedException {
+        return execute(command, bytes, SYS_CHARSET);
     }
 
     /**
      * 执行系统命令
      *
      * @param command 系统命令字符串
-     * @param input 输入流，主要用于实现管道输入操作
+     * @param inputStream 输入流，主要用于实现管道输入操作
+     * @param charset 命令处理字符集
+     * @return 命令执行结果，执行失败则返回空
      * @since 1.0
      */
-    public static void execute(String command, InputStream input)
+    public static String execute(String command, InputStream inputStream, Charset charset)
             throws IOException, InterruptedException {
-        execute(command, IOUtils.toString(input, SYS_CHARSET));
+        return execute(command, IOUtils.toByteArray(inputStream), charset);
+    }
+
+    /**
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
+     *
+     * @param command 系统命令字符串
+     * @param inputStream 输入流，主要用于实现管道输入操作
+     * @param charset 命令处理字符集
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
+     * @since 1.0
+     */
+    public static void execute(String command, InputStream inputStream, Charset charset,
+                                 Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+        execute(command, IOUtils.toByteArray(inputStream), charset, inputCallback, errorCallback);
+    }
+
+    /**
+     * 执行系统命令
+     *
+     * @param command 系统命令字符串
+     * @param inputStream 输入流，主要用于实现管道输入操作
+     * @return 命令执行结果，执行失败则返回空
+     * @since 1.0
+     */
+    public static String execute(String command, InputStream inputStream)
+            throws IOException, InterruptedException {
+        return execute(command, inputStream, SYS_CHARSET);
+    }
+
+    /**
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
+     *
+     * @param command 系统命令字符串
+     * @param inputStream 输入流，主要用于实现管道输入操作
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
+     * @since 1.0
+     */
+    public static void execute(String command, InputStream inputStream,
+                                 Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+        execute(command, inputStream, SYS_CHARSET, inputCallback, errorCallback);
     }
 
     /**
@@ -83,54 +156,141 @@ public class ProcessUtils {
      *
      * @param command 系统命令字符串
      * @param data 输入数据或参数
+     * @param charset 命令处理字符集
+     * @return 命令执行结果，执行失败则返回空
      * @since 1.0
      */
-    public static void execute(String command, String data)
+    public static String execute(String command, String data, Charset charset)
             throws IOException, InterruptedException {
-        execute(command, data.getBytes());
+        return execute(command, data.getBytes(charset), charset);
     }
 
     /**
-     * 执行系统命令
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
      *
      * @param command 系统命令字符串
-     * @param bytes 输入流，主要用于实现管道输入操作
+     * @param data 输入数据或参数
+     * @param charset 命令处理字符集
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
      * @since 1.0
      */
-    public static void execute(String command, byte[] bytes)
+    public static void execute(String command, String data, Charset charset,
+                                 Function inputCallback, Function errorCallback)
             throws IOException, InterruptedException {
+        execute(command, data.getBytes(charset), SYS_CHARSET, inputCallback, errorCallback);
+    }
+
+    /**
+     * 执行系统命令，并使用指定字符编码获取执行结果
+     *
+     * @param command 系统命令字符串
+     * @param data 输入数据或参数
+     * @return 命令执行结果，执行失败则返回空
+     * @since 1.0
+     */
+    public static String execute(String command, String data) throws IOException, InterruptedException {
+        return execute(command, data, SYS_CHARSET);
+    }
+
+    /**
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
+     *
+     * @param command 系统命令字符串
+     * @param data 输入数据或参数
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
+     * @since 1.0
+     */
+    public static void execute(String command, String data, Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+        execute(command, data, SYS_CHARSET, inputCallback, errorCallback);
+    }
+
+    /**
+     * 执行系统命令，并使用指定字符编码获取执行结果
+     *
+     * @param command 系统命令字符串
+     * @param charset 命令处理字符集
+     * @return 命令执行结果，执行失败则返回空
+     * @since 1.0
+     */
+    public static String execute(String command, Charset charset) throws IOException, InterruptedException {
+        return execute(command, "", charset);
+    }
+
+    /**
+     * 执行系统命令，并使用指定字符编码获取执行结果
+     *
+     * @param command 系统命令字符串
+     * @return 命令执行结果，执行失败则返回空
+     * @since 1.0
+     */
+    public static String execute(String command) throws IOException, InterruptedException {
+       return execute(command, SYS_CHARSET);
+    }
+
+    /**
+     * 执行系统命令，并使系统默认字符编码获取执行结果，结果从回调获取
+     *
+     * @param command 系统命令字符串
+     * @param inputCallback 执行结果自定义处理
+     * @param errorCallback 错误信息自定义处理
+     * @since 1.0
+     */
+    public static void execute(String command, Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+        execute(command, "", SYS_CHARSET, inputCallback, errorCallback);
+    }
+
+    private static String executeCommand(String command, byte[] data, Charset charset,
+                                 Function inputCallback, Function errorCallback)
+            throws IOException, InterruptedException {
+        // 获取命令执行的进程
         Process process = SYS_RUNTIME.exec(command);
-        try(OutputStream stream = process.getOutputStream()) {
-            String data = new String(bytes);
-            stream.write(data.getBytes(SYS_CHARSET));
+
+        // 判断传入参数是否为空
+        if (data != null && data.length != 0) {
+            try(OutputStream stream = process.getOutputStream()) {
+                String dataStr = new String(data);
+                stream.write(dataStr.getBytes(charset));
+            }
         }
 
-        logger.info(IOUtils.toString(process.getInputStream(), SYS_CHARSET));
-        logger.warn(IOUtils.toString(process.getErrorStream(), SYS_CHARSET));
-        // 等待进程返回并销毁进程
-        process.waitFor();
-        process.destroy();
-    }
+        // 判断是否由回调处理执行结果
+        if (inputCallback != null && errorCallback != null) {
+            EXECUTOR.execute(()-> inputCallback.apply(process.getInputStream()));
+            EXECUTOR.execute(()-> errorCallback.apply(process.getErrorStream()));
+            // 等待进程退出
+            process.waitFor();
+            // 销毁进程
+            process.destroy();
+            return null;
+        }
 
-    /**
-     * 执行系统命令，并使用回调函数处理进程执行结果
-     *
-     * @param command 系统命令字符串
-     * @param inputCallback 执行结果处理接口
-     * @param errorCallback 错误信息处理接口
-     * @since 1.0
-     */
-    public static void execute(String command,
-                               Function inputCallback,
-                               Function errorCallback)
-            throws InterruptedException, IOException {
-        Process process = SYS_RUNTIME.exec(command);
-        // 使用单独的线程来对执行结果输入流与错误输入流进行处理
-        EXECUTOR.execute(()-> inputCallback.process(process.getInputStream()));
-        EXECUTOR.execute(()-> errorCallback.process(process.getErrorStream()));
-        // 等待进程返回并销毁进程
+        // 异步获取执行结果
+        String result = null;
+        Future<String> errorFuture = EXECUTOR.submit(()-> IOUtils.toString(process.getErrorStream(), charset));
+        Future<String> resultFuture = EXECUTOR.submit(()-> IOUtils.toString(process.getInputStream(), charset));
+        // 等待进程退出
         process.waitFor();
-        process.destroy();
+        // 判断进程结束标识是否为正常退出
+        int exitCode =  process.exitValue();
+        try {
+            if (exitCode == 0) {
+                result = resultFuture.get();
+                logger.info("进程执行成功，结果：" + result);
+            } else {
+                result = errorFuture.get();
+                logger.error("进程执行失败，结果：" + result);
+            }
+        } catch (ExecutionException e) {
+            logger.error("异步线程执行失败", e);
+        } finally {
+            // 销毁进程
+            process.destroy();
+        }
+        return result;
     }
 
     /**
@@ -147,6 +307,6 @@ public class ProcessUtils {
          *
          * @param stream 输入流
          */
-        void process(InputStream stream);
+        void apply(InputStream stream);
     }
 }

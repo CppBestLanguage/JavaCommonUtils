@@ -14,7 +14,7 @@ import java.awt.image.BufferedImage;
  * @since 1.0
  */
 public final class VerificationImageUtils {
-    private VerificationImageUtils() {}
+    public VerificationImageUtils() {}
 
     /**
      * 生成验证码图像

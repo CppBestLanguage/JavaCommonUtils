@@ -1,6 +1,7 @@
 package com.github.pangju666.utils.system;
 
 import org.apache.commons.codec.digest.Md5Crypt;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.util.UUID;
@@ -21,19 +22,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
 
     /** 构造方法私有化，防止生成实例 */
     protected FileUtils() {}
-
-    /**
-     * 获取文件名称
-     *
-     * @param filePath 文件路径
-     * @return 文件名称
-     * @since 1.0
-     */
-    public static String getFileName(String filePath) {
-        filePath = replaceSplit(filePath);
-        int index = filePath.lastIndexOf(FILE_PATH_SEPARATOR);
-        return filePath.substring(index + 1);
-    }
 
     /**
      * 获取文件绝对路径
