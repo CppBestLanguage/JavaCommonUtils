@@ -1,4 +1,4 @@
-package com.github.pangju666.utils.system;
+package com.github.pangju666.utils.sys;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -12,7 +12,7 @@ import java.util.concurrent.*;
 /**
  * 系统进程工具类
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-9-24
  * @since 1.0
  */

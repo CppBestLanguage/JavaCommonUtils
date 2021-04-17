@@ -1,4 +1,4 @@
-package com.github.pangju666.utils.system;
+package com.github.pangju666.utils.sys;
 
 import java.util.Random;
 import java.util.UUID;
@@ -6,7 +6,7 @@ import java.util.UUID;
 /**
  * 随机数工具类
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-3-31
  * @since 1.0
  *

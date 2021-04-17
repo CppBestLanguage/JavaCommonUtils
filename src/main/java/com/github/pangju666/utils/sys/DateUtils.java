@@ -1,4 +1,4 @@
-package com.github.pangju666.utils.system;
+package com.github.pangju666.utils.sys;
 
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -10,7 +10,7 @@ import java.util.Date;
 /**
  * 日期工具类
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-8-20
  * @version 1.1 2020-8-28 新增根据日期字符串获取日期方法
  * @version 1.2 2020-9-25 新增获取当前系统日期字符串方法

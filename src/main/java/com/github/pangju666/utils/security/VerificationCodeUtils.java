@@ -1,11 +1,11 @@
 package com.github.pangju666.utils.security;
 
-import com.github.pangju666.utils.system.RandomUtils;
+import com.github.pangju666.utils.sys.RandomUtils;
 
 /**
  * 验证码生成器
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-3-18
  * @version 1.1 2020-3-31 增加生成器模式枚举和生成器接口
  * @since 1.0

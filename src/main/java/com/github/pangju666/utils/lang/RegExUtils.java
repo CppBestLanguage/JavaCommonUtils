@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 /**
  * 正则工具类, 只用于Unicode编码, 默认匹配空白字符
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-10-30
  * @since 1.1
  */

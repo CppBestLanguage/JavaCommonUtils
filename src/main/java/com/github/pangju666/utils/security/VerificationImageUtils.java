@@ -1,6 +1,6 @@
 package com.github.pangju666.utils.security;
 
-import com.github.pangju666.utils.system.RandomUtils;
+import com.github.pangju666.utils.sys.RandomUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -8,7 +8,7 @@ import java.awt.image.BufferedImage;
 /**
  * 验证码图像生成器
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-3-18
  * @version 1.1 2020-3-31 增加验证图像尺寸参数选择
  * @since 1.0

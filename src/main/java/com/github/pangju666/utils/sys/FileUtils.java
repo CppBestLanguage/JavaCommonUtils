@@ -1,7 +1,6 @@
-package com.github.pangju666.utils.system;
+package com.github.pangju666.utils.sys;
 
 import org.apache.commons.codec.digest.Md5Crypt;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.util.UUID;
@@ -10,7 +9,7 @@ import java.util.regex.Matcher;
 /**
  * 文件处理工具，主要包含写入和读取文件数据
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.0 2020-11-16
  * @since 1.0
  */

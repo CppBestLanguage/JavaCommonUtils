@@ -1,16 +1,13 @@
-package com.github.pangju666.utils.system;
+package com.github.pangju666.utils.sys;
 
 
 import com.github.pangju666.utils.security.VerificationImageUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
-import sun.nio.ch.IOStatus;
 
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 public final class ProcessUtilsTest {
     @Test
@@ -37,6 +34,6 @@ public final class ProcessUtilsTest {
 
     @Test
     public void test1() throws IOException {
-        ImageIO.write(new VerificationImageUtils().generate("1227"), "png", new File("C:\\Users\\nullptr\\Desktop\\demo.png"));
+        ImageIO.write(new VerificationImageUtils().generate("1227"), "png", new File("C:\\Users\\胖橘\\Desktop\\demo.png"));
     }
 }

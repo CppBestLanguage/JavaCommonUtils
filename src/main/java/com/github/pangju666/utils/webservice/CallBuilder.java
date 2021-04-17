@@ -205,11 +205,11 @@ public class CallBuilder {
      * 返回值类型
      *
      * @param returnType 返回值类型，如：{@link XMLType#XSD_STRING}
-     * @param javaType 返回值对应JAVA类
+     * @param returnClass 返回值对应JAVA类
      * @param parameters 请求参数
      */
-    public <T> T invoke(QName returnType, Class<T> javaType, Object... parameters) throws RemoteException {
-        this.call.setReturnType(returnType, javaType);
+    public <T> T invoke(QName returnType, Class<T> returnClass, Object... parameters) throws RemoteException {
+        this.call.setReturnType(returnType, returnClass);
         return (T) call.invoke(parameters);
     }
 
@@ -229,14 +229,25 @@ public class CallBuilder {
     /**
      * 调用请求
      *
-     * @param javaType 返回值对应JAVA类
+     * @param returnType 返回值对应JAVA类
      * @param parameters 请求参数
      * @return 请求结果
      * @throws RemoteException 请求错误时抛出
      */
-    public <T> T invoke(Class<T> javaType, Object... parameters) throws RemoteException {
-        this.call.setReturnClass(javaType);
+    public <T> T invoke(Class<T> returnType, Object... parameters) throws RemoteException {
+        this.call.setReturnClass(returnType);
         return (T) call.invoke(parameters);
+    }
+
+    /**
+     * 调用请求
+     *
+     * @param parameters 请求参数
+     * @return 请求结果
+     * @throws RemoteException 请求错误时抛出
+     */
+    public Object invoke(Object... parameters) throws RemoteException {
+        return call.invoke(parameters);
     }
 
     /**

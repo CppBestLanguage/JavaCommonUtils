@@ -14,7 +14,7 @@ import org.apache.commons.logging.LogFactory;
 /**
  * 密码验证组件
  *
- * @author nullptr
+ * @author 胖橘
  * @version 1.2 2020-4-18
  * @since 1.0 2019-12-27
  *
