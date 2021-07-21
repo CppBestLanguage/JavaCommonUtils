@@ -51,6 +51,13 @@
             <artifactId>commons-discovery</artifactId>
             <version>0.5</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
+        <dependency>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+            <version>1.9.4</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.dom4j/dom4j -->
         <dependency>
             <groupId>org.dom4j</groupId>
@@ -75,6 +82,7 @@
             <artifactId>snakeyaml</artifactId>
             <version>1.26</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi -->
         <dependency>
             <groupId>org.apache.poi</groupId>
@@ -93,6 +101,7 @@
             <artifactId>axis</artifactId>
             <version>1.4</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/javax.validation/validation-api -->
         <dependency>
             <groupId>javax.validation</groupId>
@@ -105,11 +114,23 @@
             <artifactId>jaxrpc-api</artifactId>
             <version>1.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.deepoove/poi-tl -->
+        <!-- https://mvnrepository.com/artifact/javax.xml.bind/jaxb-api -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
         <dependency>
             <groupId>com.deepoove</groupId>
             <artifactId>poi-tl</artifactId>
             <version>1.8.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/e-iceblue/spire.pdf.free -->
+        <dependency>
+            <groupId>e-iceblue</groupId>
+            <artifactId>spire.pdf.free</artifactId>
+            <version>3.9.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/wsdl4j/wsdl4j -->
         <dependency>
@@ -188,4 +209,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <repositories>
+        <repository>
+            <id>aliyun-repos</id>
+            <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        </repository>
+        <repository>
+            <id>iceblue</id>
+            <url>http://repo.e-iceblue.cn/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>central-repos</id>
+            <url>http://repo.maven.apache.org/maven2</url>
+        </repository>
+    </repositories>
 </project>
