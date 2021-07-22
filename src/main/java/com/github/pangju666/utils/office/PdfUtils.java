@@ -1,5 +1,6 @@
 package com.github.pangju666.utils.office;
 
+import com.github.pangju666.utils.sys.FileUtils;
 import com.spire.pdf.annotations.PdfAnnotationCollection;
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
@@ -31,6 +32,7 @@ import org.apache.commons.io.FilenameUtils;
  */
 public class PdfUtils {
     private static final Set<String> FILE_EXTENSION_SET = new HashSet<>(Arrays.asList("pdf", "PDF"));
+    private static final String SPLIT_SUFFIX_NAME = "split";
 
     /**
      * 获取文档对象
@@ -92,15 +94,26 @@ public class PdfUtils {
         return docInfoMap;
     }
 
-
+    /**
+     * 在文档中查询文字，默认查询整个单词，大小写敏感
+     *
+     * @param document 文档
+     * @param searchText 待查找文字（支持正则表达式）
+     * @return 查找结果
+     */
     public static List<PdfTextFind> findText(PdfDocument document, String searchText) {
         return findText(document, searchText, true, false);
     }
 
-    public static List<PdfTextFind> findText(PdfDocument document, String searchText, boolean ignoreCase) {
-        return findText(document, searchText, true, ignoreCase);
-    }
-
+    /**
+     * 在文档中查询文字
+     *
+     * @param document 文档
+     * @param searchText 待查找文字（支持正则表达式）
+     * @param isSearchWholeWord 是否查询整个单词（是否允许跨行）
+     * @param ignoreCase 是否忽略大小写
+     * @return 查找结果
+     */
     public static List<PdfTextFind> findText(PdfDocument document, String searchText,
                                              boolean isSearchWholeWord, boolean ignoreCase) {
         List<PdfTextFind> textFinds = new ArrayList<>();
@@ -112,6 +125,62 @@ public class PdfUtils {
             textFinds.addAll(Arrays.asList(result));
         }
         return textFinds;
+    }
+
+    /**
+     * 根据页码切分文档
+     *
+     * @param sourceDocumentStream 源文档输入流
+     * @param fileSavePath 文件保存路径
+     * @param splitPage 切分页数
+     * @return 切割结果
+     */
+    public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, String fileSavePath, int splitPage) {
+        return splitDocumentByPages(getDocument(sourceDocumentStream), fileSavePath, splitPage);
+    }
+
+    /**
+     * 根据页码切分文档
+     *
+     * @param sourceDocumentFile 源文档文件
+     * @param fileSavePath 文件保存路径
+     * @param splitPage 切分页数
+     * @return 切割结果
+     */
+    public static List<File> splitDocumentByPages(File sourceDocumentFile, String fileSavePath, int splitPage) {
+        return splitDocumentByPages(getDocument(sourceDocumentFile), fileSavePath, splitPage);
+    }
+
+    /**
+     * 根据页码切分文档
+     *
+     * @param sourceDocumentPath 源文档路径
+     * @param fileSavePath 文件保存路径
+     * @param splitPage 切分页数
+     * @return 切割结果
+     */
+    public static List<File> splitDocumentByPages(String sourceDocumentPath, String fileSavePath, int splitPage) {
+        return splitDocumentByPages(getDocument(sourceDocumentPath), fileSavePath, splitPage);
+    }
+
+    /**
+     * 根据页码切分文档
+     *
+     * @param sourceDocument 源文档
+     * @param fileSavePath 文件保存路径
+     * @param splitPage 切分页数
+     * @return 切割结果
+     */
+    public static List<File> splitDocumentByPages(PdfDocument sourceDocument, String fileSavePath, int splitPage) {
+        List<File> outputFileList = new ArrayList<>();
+        String relativeFilePath = FileUtils.getFileNameWithoutType(fileSavePath);
+        int totalPages = sourceDocument.getPages().getCount();
+        for (int i = 0; i < totalPages; i += splitPage) {
+            String targetFilePath = relativeFilePath + "-" + SPLIT_SUFFIX_NAME + "-" + (i + 1) + FileFormat.PDF.getName();
+            copyDocumentByPages(sourceDocument, getDocument(targetFilePath), i, i + splitPage - 1);
+            outputFileList.add(FileUtils.getFile(targetFilePath));
+        }
+        return outputFileList;
     }
 
     /**
@@ -189,8 +258,6 @@ public class PdfUtils {
     public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, List<Integer> pageList) {
         PdfDocument sourceDocument = getDocument(sourceDocumentPath);
         PdfDocument targetDocument = getDocument(targetDocumentPath);
-        // 加载源PDF文档
-        sourceDocument.loadFromFile(sourceDocumentPath);
         // 复制文档内容
         copyDocumentByPages(sourceDocument, targetDocument, pageList);
         //保存文档
@@ -305,6 +372,9 @@ public class PdfUtils {
 
     private static List<Integer> getPagesByRange(int startPage, int endPage) {
         List<Integer> pageList = new ArrayList<>();
+        if (startPage == endPage) {
+            return Collections.singletonList(startPage);
+        }
         int page = startPage;
         while (page <= endPage) {
             pageList.add(page);
