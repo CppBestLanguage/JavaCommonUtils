@@ -1,6 +1,7 @@
 package com.github.pangju666.utils.office;
 
 import com.github.pangju666.utils.sys.FileUtils;
+
 import com.spire.pdf.annotations.PdfAnnotationCollection;
 import com.spire.pdf.FileFormat;
 import com.spire.pdf.PdfDocument;
@@ -16,6 +17,7 @@ import com.spire.pdf.widget.PdfPageCollection;
 
 import java.awt.geom.Point2D;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.InvalidPathException;
@@ -33,6 +35,11 @@ import org.apache.commons.io.FilenameUtils;
 public class PdfUtils {
     private static final Set<String> FILE_EXTENSION_SET = new HashSet<>(Arrays.asList("pdf", "PDF"));
     private static final String SPLIT_SUFFIX_NAME = "split";
+
+    public static boolean isPDF(String filePath) {
+        String fileExtension = FilenameUtils.getExtension(filePath);
+        return FILE_EXTENSION_SET.contains(fileExtension);
+    }
 
     /**
      * 获取文档对象
@@ -67,8 +74,10 @@ public class PdfUtils {
             throw new InvalidPathException(documentPath, "不是合法的pdf文件路径");
         }
         PdfDocument document = new PdfDocument();
-        // 加载源PDF文档
-        document.loadFromFile(documentPath, FileFormat.PDF);
+        if (FileUtils.isExist(documentPath)) {
+            // 加载源PDF文档
+            document.loadFromFile(documentPath, FileFormat.PDF);
+        }
         return document;
     }
 
@@ -131,55 +140,64 @@ public class PdfUtils {
      * 根据页码切分文档
      *
      * @param sourceDocumentStream 源文档输入流
-     * @param fileSavePath 文件保存路径
+     * @param fileStorePath 文件保存路径
+     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, String fileSavePath, int splitPage) {
-        return splitDocumentByPages(getDocument(sourceDocumentStream), fileSavePath, splitPage);
+    public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, File fileStorePath, String fileName, int splitPage) throws IOException {
+        return splitDocumentByPages(getDocument(sourceDocumentStream), fileStorePath, fileName, splitPage);
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocumentFile 源文档文件
-     * @param fileSavePath 文件保存路径
+     * @param splitStoreDirectory 文件保存路径
+     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(File sourceDocumentFile, String fileSavePath, int splitPage) {
-        return splitDocumentByPages(getDocument(sourceDocumentFile), fileSavePath, splitPage);
+    public static List<File> splitDocumentByPages(File sourceDocumentFile, File splitStoreDirectory, String fileName, int splitPage) throws IOException {
+        return splitDocumentByPages(getDocument(sourceDocumentFile), splitStoreDirectory, fileName, splitPage);
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocumentPath 源文档路径
-     * @param fileSavePath 文件保存路径
+     * @param splitStoreDirectory 文件保存路径
+     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(String sourceDocumentPath, String fileSavePath, int splitPage) {
-        return splitDocumentByPages(getDocument(sourceDocumentPath), fileSavePath, splitPage);
+    public static List<File> splitDocumentByPages(String sourceDocumentPath, File splitStoreDirectory, String fileName, int splitPage) throws IOException {
+        return splitDocumentByPages(getDocument(sourceDocumentPath), splitStoreDirectory, fileName, splitPage);
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocument 源文档
-     * @param fileSavePath 文件保存路径
+     * @param splitStoreDirectory 文件保存路径
+     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(PdfDocument sourceDocument, String fileSavePath, int splitPage) {
+    public static List<File> splitDocumentByPages(PdfDocument sourceDocument, File splitStoreDirectory, String fileName, int splitPage) throws IOException {
+        FileUtils.forceMkdir(splitStoreDirectory);
         List<File> outputFileList = new ArrayList<>();
-        String relativeFilePath = FileUtils.getFileNameWithoutType(fileSavePath);
         int totalPages = sourceDocument.getPages().getCount();
-        for (int i = 0; i < totalPages; i += splitPage) {
-            String targetFilePath = relativeFilePath + "-" + SPLIT_SUFFIX_NAME + "-" + (i + 1) + FileFormat.PDF.getName();
-            copyDocumentByPages(sourceDocument, getDocument(targetFilePath), i, i + splitPage - 1);
-            outputFileList.add(FileUtils.getFile(targetFilePath));
+        for (int i = 1; i <= totalPages; i += splitPage) {
+            String splitFileName = FileUtils.getFileNameWithoutType(fileName) + "-" + SPLIT_SUFFIX_NAME + "-" + i + "." + FileFormat.PDF.getName();
+            File splitFile = FileUtils.getFile(splitStoreDirectory, splitFileName);
+            PdfDocument document = getDocument(splitFile);
+            copyDocumentByPages(sourceDocument, document, i, i + splitPage - 1);
+            document.saveToFile(splitFile.getAbsolutePath());
+            document.close();
+            outputFileList.add(splitFile);
         }
+        sourceDocument.close();
         return outputFileList;
     }
 
@@ -211,6 +229,8 @@ public class PdfUtils {
         copyDocumentByPages(sourceDocument, targetDocument, pageList);
         //保存文档
         targetDocument.saveToStream(outputDocumentStream, FileFormat.PDF);
+        sourceDocument.close();
+        targetDocument.close();
     }
 
     /**
@@ -262,6 +282,8 @@ public class PdfUtils {
         copyDocumentByPages(sourceDocument, targetDocument, pageList);
         //保存文档
         targetDocument.saveToFile(targetDocumentPath, FileFormat.PDF);
+        sourceDocument.close();
+        targetDocument.close();
     }
 
     /**

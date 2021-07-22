@@ -53,7 +53,7 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @return 当前系统时间字符串，格式为：yyyy-MM-dd
      * @since 1.2
      */
-    public static String getNowTimeStr() {
+    public static String getCurrentDateStr() {
         return formatDate(null, DATE_FORMAT);
     }
 
@@ -63,7 +63,7 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @return 当前系统时间字符串，格式为：yyyy-MM-dd-HH:mm:ss
      * @since 1.2
      */
-    public static String getNowDateTimeStr() {
+    public static String getCurrentDateTimeStr() {
         return formatDate(null, DATETIME_FORMAT);
     }
 

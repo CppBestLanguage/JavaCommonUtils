@@ -1,6 +1,7 @@
 package com.github.pangju666.utils.sys;
 
 import org.apache.commons.codec.digest.Md5Crypt;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.util.UUID;
@@ -195,11 +196,12 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     /**
      * 获取文件名称，不包含文件类型，如123.txt将返回123
      *
-     * @param fileName 文件名
+     * @param filePath 文件名
      * @return 文件名称，不包含文件类型
      * @since 1.0
      */
-    public static String getFileNameWithoutType(String fileName) {
+    public static String getFileNameWithoutType(String filePath) {
+        String fileName = FilenameUtils.getName(filePath);
         int index = fileName.lastIndexOf(TYPE_SPLIT);
         return fileName.substring(0, index);
     }
@@ -285,12 +287,5 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
         String uuid = UUID.randomUUID().toString() + System.currentTimeMillis();
         String fileType = getFileType(filePath);
         return Md5Crypt.md5Crypt(uuid.getBytes()) + TYPE_SPLIT + fileType;
-    }
-
-    public static void createDirectory(String path) throws IOException {
-        File file = new File(path);
-        if (!file.mkdir()) {
-            throw new IOException("文件夹创建失败");
-        }
     }
 }
