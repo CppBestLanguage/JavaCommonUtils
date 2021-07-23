@@ -2,11 +2,8 @@ package com.github.pangju666.utils.office;
 
 import com.github.pangju666.utils.sys.FileUtils;
 
+import com.spire.pdf.*;
 import com.spire.pdf.annotations.PdfAnnotationCollection;
-import com.spire.pdf.FileFormat;
-import com.spire.pdf.PdfDocument;
-import com.spire.pdf.PdfDocumentInformation;
-import com.spire.pdf.PdfPageBase;
 import com.spire.pdf.bookmarks.PdfBookmark;
 import com.spire.pdf.bookmarks.PdfBookmarkCollection;
 import com.spire.pdf.general.PdfDestination;
@@ -15,15 +12,21 @@ import com.spire.pdf.graphics.PdfMargins;
 import com.spire.pdf.graphics.PdfTemplate;
 import com.spire.pdf.widget.PdfPageCollection;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.InvalidPathException;
 import java.util.*;
+import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
+
+import javax.imageio.ImageIO;
 
 /**
  * PDF工具类
@@ -82,13 +85,84 @@ public class PdfUtils {
     }
 
     /**
+     * 获取文档封面
+     *
+     * @param documentStream 文档输入流
+     */
+    public static BufferedImage getDocumentCover(InputStream documentStream) {
+        return getDocumentCover(getDocument(documentStream));
+    }
+
+    /**
+     * 获取文档封面
+     *
+     * @param documentFile 文档文件
+     */
+    public static BufferedImage getDocumentCover(File documentFile) {
+        return getDocumentCover(getDocument(documentFile));
+    }
+
+    /**
+     * 获取文档封面
+     *
+     * @param documentPath 文档路径
+     */
+    public static BufferedImage getDocumentCover(String documentPath) {
+        return getDocumentCover(getDocument(documentPath));
+    }
+
+    /**
+     * 获取文档封面
+     *
+     * @param pdfDocument 文档对象
+     */
+    public static BufferedImage getDocumentCover(PdfDocument pdfDocument) {
+        BufferedImage image = pdfDocument.saveAsImage(0);
+        pdfDocument.close();
+        return image;
+    }
+
+    /**
+     * 获取文档元数据
+     *
+     * @param documentStream 文档流
+     * @return 文档元数据映射
+     */
+    public static Map<String, Object> getDocumentInformation(InputStream documentStream) {
+        return getDocumentInformation(getDocument(documentStream));
+    }
+
+    /**
+     * 获取文档元数据
+     *
+     * @param documentFile 文档文件
+     * @return 文档元数据映射
+     */
+    public static Map<String, Object> getDocumentInformation(File documentFile) {
+        return getDocumentInformation(getDocument(documentFile));
+    }
+
+    /**
+     * 获取文档元数据
+     *
+     * @param documentPath 文档路径
+     * @return 文档元数据映射
+     */
+    public static Map<String, Object> getDocumentInformation(String documentPath) {
+        PdfDocument document = getDocument(documentPath);
+        Map<String, Object> documentInfo = getDocumentInformation(document);
+        document.close();
+        return documentInfo;
+    }
+
+    /**
      * 获取文档元数据
      *
      * @param document pdf文档对象
      * @return 文档元数据映射
      */
     public static Map<String, Object> getDocumentInformation(PdfDocument document) {
-        Map<String, Object> docInfoMap = new HashMap<>(8);
+        Map<String, Object> docInfoMap = new HashMap<>(9);
         PdfDocumentInformation docInfo = document.getDocumentInformation();
 
         docInfoMap.put("Author", docInfo.getAuthor());
@@ -99,6 +173,7 @@ public class PdfUtils {
         docInfoMap.put("Title", docInfo.getTitle());
         docInfoMap.put("Subject", docInfo.getSubject());
         docInfoMap.put("MetaData", docInfo.getMetaData());
+        docInfoMap.put("pageCount", document.getPages().getCount());
 
         return docInfoMap;
     }
@@ -277,7 +352,7 @@ public class PdfUtils {
      */
     public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, List<Integer> pageList) {
         PdfDocument sourceDocument = getDocument(sourceDocumentPath);
-        PdfDocument targetDocument = getDocument(targetDocumentPath);
+        PdfDocument targetDocument = new PdfDocument();
         // 复制文档内容
         copyDocumentByPages(sourceDocument, targetDocument, pageList);
         //保存文档
@@ -307,26 +382,27 @@ public class PdfUtils {
      */
     public static void copyDocumentByPages(PdfDocument sourceDocument, PdfDocument targetDocument, List<Integer> pageList) {
         // 页码排序
-        pageList.sort(Integer::compareTo);
+        if (pageList.size() > 1) {
+            pageList.sort(Integer::compareTo);
+        }
+
         // 获取文档页码集合
         PdfPageCollection sourcePages = sourceDocument.getPages();
         PdfPageCollection targetPages = targetDocument.getPages();
+
         // 遍历待复制页码列表
         for (Integer pageNumber : pageList) {
             // 判断是否大于源文档结束页码
             if (pageNumber <= sourcePages.getCount()) {
                 PdfPageBase sourcePage = sourcePages.get(pageNumber - 1);
-                PdfPageBase targetPage = targetPages.add(sourcePage.getSize(), new PdfMargins(0));
-
+                PdfPageBase targetPage = targetPages.add(sourcePage.getSize(), new PdfMargins(0, 0));
                 // 拷贝源页面标注信息至目标页面
                 PdfAnnotationCollection annotations = sourcePage.getAnnotationsWidget();
                 targetPage.setAnnotationsWidget(annotations);
                 // 清理源页面标注信息，防止绘制页面时，视为图片处理
                 annotations.clear();
-
                 // 绘制目标页面
-                PdfTemplate template = sourcePage.createTemplate();
-                template.draw(targetPage, new Point2D.Float(0, 0));
+                sourcePage.createTemplate().draw(targetPage, new Point2D.Float(0, 0));
             }
         }
         // 复制文档元属性
@@ -383,13 +459,13 @@ public class PdfUtils {
         Map<String, Object> documentInformationMap = getDocumentInformation(sourceDocument);
         PdfDocumentInformation targetDocumentInformation = targetDocument.getDocumentInformation();
 
-        targetDocumentInformation.setAuthor((String) documentInformationMap.getOrDefault("Author", ""));
-        targetDocumentInformation.setCreationDate((Date) documentInformationMap.getOrDefault("CreationDate", new Date()));
-        targetDocumentInformation.setCreator((String) documentInformationMap.getOrDefault("Creator", ""));
-        targetDocumentInformation.setKeywords((String) documentInformationMap.getOrDefault("Keywords", ""));
-        targetDocumentInformation.setProducer((String) documentInformationMap.getOrDefault("Producer", ""));
-        targetDocumentInformation.setTitle((String) documentInformationMap.getOrDefault("Title", ""));
-        targetDocumentInformation.setSubject((String) documentInformationMap.getOrDefault("Subject", ""));
+        targetDocumentInformation.setAuthor((String) documentInformationMap.get("Author"));
+        targetDocumentInformation.setCreationDate((Date) documentInformationMap.get("CreationDate"));
+        targetDocumentInformation.setCreator((String) documentInformationMap.get("Creator"));
+        targetDocumentInformation.setKeywords((String) documentInformationMap.get("Keywords"));
+        targetDocumentInformation.setProducer((String) documentInformationMap.get("Producer"));
+        targetDocumentInformation.setTitle((String) documentInformationMap.get("Title"));
+        targetDocumentInformation.setSubject((String) documentInformationMap.get("Subject"));
     }
 
     private static List<Integer> getPagesByRange(int startPage, int endPage) {

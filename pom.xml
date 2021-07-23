@@ -216,7 +216,7 @@
             <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
         </repository>
         <repository>
-            <id>iceblue</id>
+            <id>com.e-iceblue</id>
             <url>http://repo.e-iceblue.cn/repository/maven-public/</url>
         </repository>
         <repository>

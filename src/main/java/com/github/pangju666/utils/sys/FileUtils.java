@@ -48,7 +48,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static String getParentPath(String filePath) {
         filePath = replaceSplit(filePath);
         int index = filePath.lastIndexOf(FILE_PATH_SEPARATOR);
-        return filePath.substring(0, index);
+        return index == -1 ? "" : filePath.substring(0, index);
     }
 
     /**
@@ -61,6 +61,9 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @since 1.0
      */
     public static String replaceSplit(String filePath) {
+        if (!filePath.contains("\\") || !filePath.contains("/")) {
+            return filePath;
+        }
         return filePath.replaceAll(Matcher.quoteReplacement("\\"), FILE_PATH_SEPARATOR);
     }
 
@@ -134,7 +137,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
      * @since 1.0
      */
     public static String changeFileType(String fileName, String newFileType) {
-        return changeFileType(fileName, newFileType, true);
+        return changeFileType(fileName, newFileType, false);
     }
 
     /**
@@ -203,7 +206,7 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     public static String getFileNameWithoutType(String filePath) {
         String fileName = FilenameUtils.getName(filePath);
         int index = fileName.lastIndexOf(TYPE_SPLIT);
-        return fileName.substring(0, index);
+        return index == -1 ? filePath : fileName.substring(0, index);
     }
 
     /**
