@@ -37,9 +37,12 @@ import javax.imageio.ImageIO;
  */
 public class PdfUtils {
     private static final Set<String> FILE_EXTENSION_SET = new HashSet<>(Arrays.asList("pdf", "PDF"));
-    private static final String SPLIT_SUFFIX_NAME = "split";
 
-    public static boolean isPDF(String filePath) {
+    public static boolean isPdfFile(File file) {
+        return isPdfFile(file.getName());
+    }
+
+    public static boolean isPdfFile(String filePath) {
         String fileExtension = FilenameUtils.getExtension(filePath);
         return FILE_EXTENSION_SET.contains(fileExtension);
     }
@@ -216,12 +219,11 @@ public class PdfUtils {
      *
      * @param sourceDocumentStream 源文档输入流
      * @param fileStorePath 文件保存路径
-     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, File fileStorePath, String fileName, int splitPage) throws IOException {
-        return splitDocumentByPages(getDocument(sourceDocumentStream), fileStorePath, fileName, splitPage);
+    public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, File fileStorePath, int splitPage) throws IOException {
+        return splitDocumentByPages(getDocument(sourceDocumentStream), fileStorePath, splitPage);
     }
 
     /**
@@ -229,12 +231,11 @@ public class PdfUtils {
      *
      * @param sourceDocumentFile 源文档文件
      * @param splitStoreDirectory 文件保存路径
-     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(File sourceDocumentFile, File splitStoreDirectory, String fileName, int splitPage) throws IOException {
-        return splitDocumentByPages(getDocument(sourceDocumentFile), splitStoreDirectory, fileName, splitPage);
+    public static List<File> splitDocumentByPages(File sourceDocumentFile, File splitStoreDirectory, int splitPage) throws IOException {
+        return splitDocumentByPages(getDocument(sourceDocumentFile), splitStoreDirectory, splitPage);
     }
 
     /**
@@ -242,12 +243,11 @@ public class PdfUtils {
      *
      * @param sourceDocumentPath 源文档路径
      * @param splitStoreDirectory 文件保存路径
-     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(String sourceDocumentPath, File splitStoreDirectory, String fileName, int splitPage) throws IOException {
-        return splitDocumentByPages(getDocument(sourceDocumentPath), splitStoreDirectory, fileName, splitPage);
+    public static List<File> splitDocumentByPages(String sourceDocumentPath, File splitStoreDirectory, int splitPage) throws IOException {
+        return splitDocumentByPages(getDocument(sourceDocumentPath), splitStoreDirectory, splitPage);
     }
 
     /**
@@ -255,19 +255,18 @@ public class PdfUtils {
      *
      * @param sourceDocument 源文档
      * @param splitStoreDirectory 文件保存路径
-     * @param fileName 文件名称
      * @param splitPage 切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(PdfDocument sourceDocument, File splitStoreDirectory, String fileName, int splitPage) throws IOException {
+    public static List<File> splitDocumentByPages(PdfDocument sourceDocument, File splitStoreDirectory, int splitPage) throws IOException {
         FileUtils.forceMkdir(splitStoreDirectory);
         List<File> outputFileList = new ArrayList<>();
         int totalPages = sourceDocument.getPages().getCount();
-        for (int i = 1; i <= totalPages; i += splitPage) {
-            String splitFileName = FileUtils.getFileNameWithoutType(fileName) + "-" + SPLIT_SUFFIX_NAME + "-" + i + "." + FileFormat.PDF.getName();
+        for (int pageNumber = 1; pageNumber <= totalPages; pageNumber += splitPage) {
+            String splitFileName = pageNumber + "." + FileFormat.PDF.getName();
             File splitFile = FileUtils.getFile(splitStoreDirectory, splitFileName);
             PdfDocument document = getDocument(splitFile);
-            copyDocumentByPages(sourceDocument, document, i, i + splitPage - 1);
+            copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
             document.saveToFile(splitFile.getAbsolutePath());
             document.close();
             outputFileList.add(splitFile);
