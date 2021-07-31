@@ -23,10 +23,10 @@ public class BeanUtils {
         return sourceList.stream().map(convertFunc).collect(Collectors.toList());
     }
 
-    public static <T, R> void convert(T source, R target) {
+    public static <T, R> void copy(T source, R target) {
         if (source != null && target != null) {
             BeanCopier copier = getBeanCopier(new TypeToken<T>() {}, new TypeToken<R>() {});
-            convert(source, target, copier);
+            copier.copy(source, target, null);
         }
     }
 
@@ -44,18 +44,14 @@ public class BeanUtils {
                 .collect(Collectors.toList());
     }
 
-    public static <T, R> R convert(T source, Class<R> targetClass, BeanCopier copier) throws RuntimeException {
+    protected static <T, R> R convert(T source, Class<R> targetClass, BeanCopier copier) throws RuntimeException {
         try {
             R target = targetClass.getDeclaredConstructor().newInstance();
-            convert(source, target, copier);
+            copier.copy(source, target, null);
             return target;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException("转换失败", e);
         }
-    }
-
-    public static <T, R> void convert(T entity, R target, BeanCopier copier) throws RuntimeException {
-        copier.copy(entity, target, null);
     }
 
     protected static <T, R> BeanCopier getBeanCopier(TypeToken<T> sourceTypeToken, TypeToken<R> targetTypeToken) {
