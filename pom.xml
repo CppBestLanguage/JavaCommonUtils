@@ -51,11 +51,12 @@
             <artifactId>commons-discovery</artifactId>
             <version>0.5</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/commons-beanutils/commons-beanutils -->
+
+        <!-- https://mvnrepository.com/artifact/org.sonatype.sisu.inject/cglib -->
         <dependency>
-            <groupId>commons-beanutils</groupId>
-            <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
+            <groupId>org.sonatype.sisu.inject</groupId>
+            <artifactId>cglib</artifactId>
+            <version>3.1.1</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.dom4j/dom4j -->
@@ -89,6 +90,7 @@
             <artifactId>poi</artifactId>
             <version>4.1.2</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
         <dependency>
             <groupId>org.apache.poi</groupId>
