@@ -2,31 +2,23 @@ package com.github.pangju666.utils.office;
 
 import com.github.pangju666.utils.sys.FileUtils;
 
-import com.spire.pdf.*;
-import com.spire.pdf.annotations.PdfAnnotationCollection;
-import com.spire.pdf.bookmarks.PdfBookmark;
-import com.spire.pdf.bookmarks.PdfBookmarkCollection;
-import com.spire.pdf.general.PdfDestination;
-import com.spire.pdf.general.find.PdfTextFind;
-import com.spire.pdf.graphics.PdfMargins;
-import com.spire.pdf.graphics.PdfTemplate;
-import com.spire.pdf.widget.PdfPageCollection;
-
-import java.awt.*;
-import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.InvalidPathException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-
-import javax.imageio.ImageIO;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
+import org.apache.pdfbox.pdmodel.interactive.action.PDActionGoTo;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotation;
+import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
+import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
+import org.apache.pdfbox.rendering.PDFRenderer;
 
 /**
  * PDF工具类
@@ -36,7 +28,8 @@ import javax.imageio.ImageIO;
  * @since 1.0
  */
 public class PdfUtils {
-    private static final Set<String> FILE_EXTENSION_SET = new HashSet<>(Arrays.asList("pdf", "PDF"));
+    private static final Set<String> PDF_FILE_EXTENSION_SET = new HashSet<>(Arrays.asList("pdf", "PDF"));
+    private static final String PDF_FILE_EXTENSION = ".pdf";
 
     public static boolean isPdfFile(File file) {
         return isPdfFile(file.getName());
@@ -44,7 +37,7 @@ public class PdfUtils {
 
     public static boolean isPdfFile(String filePath) {
         String fileExtension = FilenameUtils.getExtension(filePath);
-        return FILE_EXTENSION_SET.contains(fileExtension);
+        return PDF_FILE_EXTENSION_SET.contains(fileExtension);
     }
 
     /**
@@ -52,19 +45,8 @@ public class PdfUtils {
      *
      * @param inputStream 文档输入流
      */
-    public static PdfDocument getDocument(InputStream inputStream) {
-        PdfDocument document = new PdfDocument();
-        document.loadFromStream(inputStream);
-        return document;
-    }
-
-    /**
-     * 获取文档对象
-     *
-     * @param documentFile 文档文件
-     */
-    public static PdfDocument getDocument(File documentFile) {
-        return getDocument(documentFile.getAbsolutePath());
+    public static PDDocument getDocument(InputStream inputStream) throws IOException {
+        return PDDocument.load(inputStream);
     }
 
     /**
@@ -72,19 +54,28 @@ public class PdfUtils {
      *
      * @param documentPath 文档路径
      */
-    public static PdfDocument getDocument(String documentPath) {
+    public static PDDocument getDocument(String documentPath) throws IOException {
+        return getDocument(FileUtils.getFile(documentPath));
+    }
+
+    /**
+     * 获取文档对象
+     *
+     * @param documentFile 文档文件
+     */
+    public static PDDocument getDocument(File documentFile) throws IOException {
+        String filePath = documentFile.getAbsolutePath();
         // 获取文件后缀
-        String fileExtension = FilenameUtils.getExtension(documentPath);
+        String fileExtension = FilenameUtils.getExtension(filePath);
         // 判断是否为pdf文件
-        if (!FILE_EXTENSION_SET.contains(fileExtension)) {
-            throw new InvalidPathException(documentPath, "不是合法的pdf文件路径");
+        if (!PDF_FILE_EXTENSION_SET.contains(fileExtension)) {
+            throw new InvalidPathException(filePath, "不是合法的pdf文件路径");
         }
-        PdfDocument document = new PdfDocument();
-        if (FileUtils.isExist(documentPath)) {
-            // 加载源PDF文档
-            document.loadFromFile(documentPath, FileFormat.PDF);
+
+        if (!documentFile.exists() || !documentFile.isFile()) {
+            throw new FileNotFoundException("文件不存在， 请检查路径是否正确");
         }
-        return document;
+        return PDDocument.load(documentFile);
     }
 
     /**
@@ -92,134 +83,50 @@ public class PdfUtils {
      *
      * @param documentStream 文档输入流
      */
-    public static BufferedImage getDocumentCover(InputStream documentStream) {
-        return getDocumentCover(getDocument(documentStream));
-    }
-
-    /**
-     * 获取文档封面
-     *
-     * @param documentFile 文档文件
-     */
-    public static BufferedImage getDocumentCover(File documentFile) {
-        return getDocumentCover(getDocument(documentFile));
-    }
-
-    /**
-     * 获取文档封面
-     *
-     * @param documentPath 文档路径
-     */
-    public static BufferedImage getDocumentCover(String documentPath) {
-        return getDocumentCover(getDocument(documentPath));
-    }
-
-    /**
-     * 获取文档封面
-     *
-     * @param pdfDocument 文档对象
-     */
-    public static BufferedImage getDocumentCover(PdfDocument pdfDocument) {
-        BufferedImage image = pdfDocument.saveAsImage(0);
-        pdfDocument.close();
-        return image;
-    }
-
-    /**
-     * 获取文档元数据
-     *
-     * @param documentStream 文档流
-     * @return 文档元数据映射
-     */
-    public static Map<String, Object> getDocumentInformation(InputStream documentStream) {
-        return getDocumentInformation(getDocument(documentStream));
-    }
-
-    /**
-     * 获取文档元数据
-     *
-     * @param documentFile 文档文件
-     * @return 文档元数据映射
-     */
-    public static Map<String, Object> getDocumentInformation(File documentFile) {
-        return getDocumentInformation(getDocument(documentFile));
-    }
-
-    /**
-     * 获取文档元数据
-     *
-     * @param documentPath 文档路径
-     * @return 文档元数据映射
-     */
-    public static Map<String, Object> getDocumentInformation(String documentPath) {
-        PdfDocument document = getDocument(documentPath);
-        Map<String, Object> documentInfo = getDocumentInformation(document);
+    public static BufferedImage getDocumentCover(InputStream documentStream) throws IOException {
+        PDDocument document = getDocument(documentStream);
+        BufferedImage coverImage = getDocumentCover(document);
         document.close();
-        return documentInfo;
+        return coverImage;
     }
 
     /**
-     * 获取文档元数据
+     * 获取文档封面
      *
-     * @param document pdf文档对象
-     * @return 文档元数据映射
+     * @param documentFile 文档文件
      */
-    public static Map<String, Object> getDocumentInformation(PdfDocument document) {
-        Map<String, Object> docInfoMap = new HashMap<>(9);
-        PdfDocumentInformation docInfo = document.getDocumentInformation();
-
-        docInfoMap.put("Author", docInfo.getAuthor());
-        docInfoMap.put("CreationDate", docInfo.getCreationDate());
-        docInfoMap.put("Creator", docInfo.getCreator());
-        docInfoMap.put("Keywords", docInfo.getKeywords());
-        docInfoMap.put("Producer", docInfo.getProducer());
-        docInfoMap.put("Title", docInfo.getTitle());
-        docInfoMap.put("Subject", docInfo.getSubject());
-        docInfoMap.put("MetaData", docInfo.getMetaData());
-        docInfoMap.put("pageCount", document.getPages().getCount());
-
-        return docInfoMap;
+    public static BufferedImage getDocumentCover(File documentFile) throws IOException {
+        PDDocument document = getDocument(documentFile);
+        BufferedImage coverImage = getDocumentCover(document);
+        document.close();
+        return coverImage;
     }
 
     /**
-     * 在文档中查询文字，默认查询整个单词，大小写敏感
+     * 获取文档封面
      *
-     * @param document 文档
-     * @param searchText 待查找文字（支持正则表达式）
-     * @return 查找结果
+     * @param documentPath 文档路径
      */
-    public static List<PdfTextFind> findText(PdfDocument document, String searchText) {
-        return findText(document, searchText, true, false);
+    public static BufferedImage getDocumentCover(String documentPath) throws IOException {
+        return getDocumentCover(FileUtils.getFile(documentPath));
     }
 
     /**
-     * 在文档中查询文字
+     * 获取文档封面
      *
-     * @param document 文档
-     * @param searchText 待查找文字（支持正则表达式）
-     * @param isSearchWholeWord 是否查询整个单词（是否允许跨行）
-     * @param ignoreCase 是否忽略大小写
-     * @return 查找结果
+     * @param document 文档对象
      */
-    public static List<PdfTextFind> findText(PdfDocument document, String searchText,
-                                             boolean isSearchWholeWord, boolean ignoreCase) {
-        List<PdfTextFind> textFinds = new ArrayList<>();
-        PdfPageCollection pages = document.getPages();
-        //遍历文档页面
-        for (Object object : pages) {
-            PdfPageBase page = (PdfPageBase) object;
-            PdfTextFind[] result = page.findText(searchText, isSearchWholeWord, ignoreCase).getFinds();
-            textFinds.addAll(Arrays.asList(result));
-        }
-        return textFinds;
+    public static BufferedImage getDocumentCover(PDDocument document) throws IOException {
+        PDFRenderer renderer = new PDFRenderer(document);
+        return renderer.renderImage(0);
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocumentStream 源文档输入流
-     * @param fileStorePath 文件保存路径
-     * @param splitPage 切分页数
+     * @param fileStorePath        文件保存路径
+     * @param splitPage            切分页数
      * @return 切割结果
      */
     public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, File fileStorePath, int splitPage) throws IOException {
@@ -229,9 +136,9 @@ public class PdfUtils {
     /**
      * 根据页码切分文档
      *
-     * @param sourceDocumentFile 源文档文件
+     * @param sourceDocumentFile  源文档文件
      * @param splitStoreDirectory 文件保存路径
-     * @param splitPage 切分页数
+     * @param splitPage           切分页数
      * @return 切割结果
      */
     public static List<File> splitDocumentByPages(File sourceDocumentFile, File splitStoreDirectory, int splitPage) throws IOException {
@@ -241,9 +148,9 @@ public class PdfUtils {
     /**
      * 根据页码切分文档
      *
-     * @param sourceDocumentPath 源文档路径
+     * @param sourceDocumentPath  源文档路径
      * @param splitStoreDirectory 文件保存路径
-     * @param splitPage 切分页数
+     * @param splitPage           切分页数
      * @return 切割结果
      */
     public static List<File> splitDocumentByPages(String sourceDocumentPath, File splitStoreDirectory, int splitPage) throws IOException {
@@ -253,23 +160,23 @@ public class PdfUtils {
     /**
      * 根据页码切分文档
      *
-     * @param sourceDocument 源文档
+     * @param sourceDocument      源文档
      * @param splitStoreDirectory 文件保存路径
-     * @param splitPage 切分页数
+     * @param splitPage           切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(PdfDocument sourceDocument, File splitStoreDirectory, int splitPage) throws IOException {
+    public static List<File> splitDocumentByPages(PDDocument sourceDocument, File splitStoreDirectory, int splitPage) throws IOException {
         FileUtils.forceMkdir(splitStoreDirectory);
         List<File> outputFileList = new ArrayList<>();
         int totalPages = sourceDocument.getPages().getCount();
         for (int pageNumber = 1; pageNumber <= totalPages; pageNumber += splitPage) {
-            String splitFileName = pageNumber + "." + FileFormat.PDF.getName();
+            String splitFileName = pageNumber + PDF_FILE_EXTENSION;
             File splitFile = FileUtils.getFile(splitStoreDirectory, splitFileName);
-            PdfDocument document = getDocument(splitFile);
-            copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
-            document.saveToFile(splitFile.getAbsolutePath());
-            document.close();
-            outputFileList.add(splitFile);
+            try(PDDocument document = getDocument(splitFile)) {
+                copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
+                document.save(splitFile.getAbsolutePath());
+                outputFileList.add(splitFile);
+            }
         }
         sourceDocument.close();
         return outputFileList;
@@ -278,44 +185,12 @@ public class PdfUtils {
     /**
      * 拷贝源文档的指定页面至目标文档
      *
-     * @param inputDocumentStream 源文档输入流
-     * @param outputDocumentStream 目标文档输出流
-     * @param startPage 起始页码
-     * @param endPage 结束页码
-     */
-    public static void copyDocumentByPages(InputStream inputDocumentStream, OutputStream outputDocumentStream, int startPage, int endPage) {
-        copyDocumentByPages(inputDocumentStream, outputDocumentStream, getPagesByRange(startPage, endPage));
-    }
-
-    /**
-     * 拷贝源文档的指定页面至目标文档
-     *
-     * @param inputDocumentStream 源文档输入流
-     * @param outputDocumentStream 目标文档输出流
-     * @param pageList 页码列表
-     */
-    public static void copyDocumentByPages(InputStream inputDocumentStream, OutputStream outputDocumentStream, List<Integer> pageList) {
-        PdfDocument sourceDocument = new PdfDocument();
-        PdfDocument targetDocument = new PdfDocument();
-        // 加载源PDF文档
-        sourceDocument.loadFromStream(inputDocumentStream);
-        // 复制文档内容
-        copyDocumentByPages(sourceDocument, targetDocument, pageList);
-        //保存文档
-        targetDocument.saveToStream(outputDocumentStream, FileFormat.PDF);
-        sourceDocument.close();
-        targetDocument.close();
-    }
-
-    /**
-     * 拷贝源文档的指定页面至目标文档
-     *
      * @param sourceDocumentFile 源文档
      * @param targetDocumentFile 目标文档
-     * @param startPage 起始页码
-     * @param endPage 结束页码
+     * @param startPage          起始页码
+     * @param endPage            结束页码
      */
-    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, int startPage, int endPage) {
+    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, int startPage, int endPage) throws IOException {
         copyDocumentByPages(sourceDocumentFile, targetDocumentFile, getPagesByRange(startPage, endPage));
     }
 
@@ -324,9 +199,9 @@ public class PdfUtils {
      *
      * @param sourceDocumentFile 源文档
      * @param targetDocumentFile 目标文档
-     * @param pageList 页码列表
+     * @param pageList           页码列表
      */
-    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, List<Integer> pageList) {
+    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, List<Integer> pageList) throws IOException {
         copyDocumentByPages(sourceDocumentFile.getAbsolutePath(), targetDocumentFile.getAbsolutePath(), pageList);
     }
 
@@ -335,10 +210,10 @@ public class PdfUtils {
      *
      * @param sourceDocumentPath 源文档
      * @param targetDocumentPath 目标文档
-     * @param startPage 起始页码
-     * @param endPage 结束页码
+     * @param startPage          起始页码
+     * @param endPage            结束页码
      */
-    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, int startPage, int endPage) {
+    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, int startPage, int endPage) throws IOException {
         copyDocumentByPages(sourceDocumentPath, targetDocumentPath, getPagesByRange(startPage, endPage));
     }
 
@@ -347,17 +222,16 @@ public class PdfUtils {
      *
      * @param sourceDocumentPath 源文档
      * @param targetDocumentPath 目标文档
-     * @param pageList 页码列表
+     * @param pageList           页码列表
      */
-    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, List<Integer> pageList) {
-        PdfDocument sourceDocument = getDocument(sourceDocumentPath);
-        PdfDocument targetDocument = new PdfDocument();
-        // 复制文档内容
-        copyDocumentByPages(sourceDocument, targetDocument, pageList);
-        //保存文档
-        targetDocument.saveToFile(targetDocumentPath, FileFormat.PDF);
-        sourceDocument.close();
-        targetDocument.close();
+    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, List<Integer> pageList) throws IOException {
+        try(PDDocument sourceDocument = getDocument(sourceDocumentPath);
+            PDDocument targetDocument = new PDDocument()) {
+            // 复制文档内容
+            copyDocumentByPages(sourceDocument, targetDocument, pageList);
+            //保存文档
+            targetDocument.save(targetDocumentPath);
+        }
     }
 
     /**
@@ -365,10 +239,10 @@ public class PdfUtils {
      *
      * @param sourceDocument 源文档
      * @param targetDocument 目标文档
-     * @param startPage 起始页码
-     * @param endPage 结束页码
+     * @param startPage      起始页码
+     * @param endPage        结束页码
      */
-    public static void copyDocumentByPages(PdfDocument sourceDocument, PdfDocument targetDocument, int startPage, int endPage) {
+    public static void copyDocumentByPages(PDDocument sourceDocument, PDDocument targetDocument, int startPage, int endPage) throws IOException {
         copyDocumentByPages(sourceDocument, targetDocument, getPagesByRange(startPage, endPage));
     }
 
@@ -377,47 +251,47 @@ public class PdfUtils {
      *
      * @param sourceDocument 源文档
      * @param targetDocument 目标文档
-     * @param pageList 页码列表
+     * @param pageList       页码列表
      */
-    public static void copyDocumentByPages(PdfDocument sourceDocument, PdfDocument targetDocument, List<Integer> pageList) {
-        // 页码排序
-        if (pageList.size() > 1) {
-            pageList.sort(Integer::compareTo);
-        }
+    public static void copyDocumentByPages(PDDocument sourceDocument, PDDocument targetDocument, List<Integer> pageList) throws IOException {
+        int maxPageNumber = sourceDocument.getNumberOfPages();
 
-        // 获取文档页码集合
-        PdfPageCollection sourcePages = sourceDocument.getPages();
-        PdfPageCollection targetPages = targetDocument.getPages();
+        // 页码排序并过滤
+        List<Integer> pageNumberList = pageList.stream().distinct()
+                    .filter(pageNumber -> pageNumber >= 1 && pageNumber <= maxPageNumber)
+                    .sorted(Integer::compareTo).collect(Collectors.toList());
 
-        // 遍历待复制页码列表
-        for (Integer pageNumber : pageList) {
-            // 判断是否大于源文档结束页码
-            if (pageNumber <= sourcePages.getCount()) {
-                PdfPageBase sourcePage = sourcePages.get(pageNumber - 1);
-                PdfPageBase targetPage = targetPages.add(sourcePage.getSize(), new PdfMargins(0, 0));
-                // 拷贝源页面标注信息至目标页面
-                PdfAnnotationCollection annotations = sourcePage.getAnnotationsWidget();
-                targetPage.setAnnotationsWidget(annotations);
-                // 清理源页面标注信息，防止绘制页面时，视为图片处理
-                annotations.clear();
-                // 绘制目标页面
-                sourcePage.createTemplate().draw(targetPage, new Point2D.Float(0, 0));
-            }
+        for (Integer pageNumber : pageNumberList) {
+            PDPage sourcePage = sourceDocument.getPage(pageNumber - 1);
+            PDPage targetPage = targetDocument.importPage(sourcePage);
+            targetPage.setResources(sourcePage.getResources());
+            copyAnnotations(targetPage);
         }
-        // 复制文档元属性
-        copyDocumentInformation(sourceDocument, targetDocument);
-        // 复制文档书签
-        copyBookMarks(sourceDocument, targetDocument, pageList);
+        // 复制文档属性
+        targetDocument.getDocument().setVersion(sourceDocument.getVersion());
+        targetDocument.setDocumentInformation(sourceDocument.getDocumentInformation());
+        targetDocument.getDocumentCatalog().setViewerPreferences(sourceDocument.getDocumentCatalog().getViewerPreferences());
     }
 
-    /**
-     * 复制文档书签至目标文档
-     *
-     * @param sourceDocument 源文档
-     * @param targetDocument 目标文档
-     * @param pageList 要复制的页码列表
-     */
-    protected static void copyBookMarks(PdfDocument sourceDocument, PdfDocument targetDocument, List<Integer> pageList) {
+    protected static void copyAnnotations(PDPage sourcePage) throws IOException {
+        List<PDAnnotation> annotations = sourcePage.getAnnotations();
+        for (PDAnnotation annotation : annotations) {
+            if (annotation instanceof PDAnnotationLink) {
+                PDAnnotationLink link = (PDAnnotationLink) annotation;
+                PDDestination destination = link.getDestination();
+                PDAction action = link.getAction();
+                if (destination == null && action instanceof PDActionGoTo) {
+                    destination = ((PDActionGoTo) action).getDestination();
+                }
+                if (destination instanceof PDPageDestination) {
+                    ((PDPageDestination) destination).setPage(null);
+                }
+            }
+            annotation.setPage(null);
+        }
+    }
+
+    /*protected static void copyBookMarks(PDDocument sourceDocument, PDDocument targetDocument, List<Integer> pageList) {
         // 获取文档标注
         PdfBookmarkCollection sourceBookmarks = sourceDocument.getBookmarks();
         PdfBookmarkCollection targetBookmarks = targetDocument.getBookmarks();
@@ -445,27 +319,7 @@ public class PdfUtils {
                 targetBookmark.setDestination(targetDestination);
             }
         }
-    }
-
-    /**
-     * 复制文档元数据至目标文档
-     *
-     * @param sourceDocument 源文档
-     * @param targetDocument 目标文档
-     */
-    protected static void copyDocumentInformation(PdfDocument sourceDocument, PdfDocument targetDocument) {
-        // 复制文档属性
-        Map<String, Object> documentInformationMap = getDocumentInformation(sourceDocument);
-        PdfDocumentInformation targetDocumentInformation = targetDocument.getDocumentInformation();
-
-        targetDocumentInformation.setAuthor((String) documentInformationMap.get("Author"));
-        targetDocumentInformation.setCreationDate((Date) documentInformationMap.get("CreationDate"));
-        targetDocumentInformation.setCreator((String) documentInformationMap.get("Creator"));
-        targetDocumentInformation.setKeywords((String) documentInformationMap.get("Keywords"));
-        targetDocumentInformation.setProducer((String) documentInformationMap.get("Producer"));
-        targetDocumentInformation.setTitle((String) documentInformationMap.get("Title"));
-        targetDocumentInformation.setSubject((String) documentInformationMap.get("Subject"));
-    }
+    }*/
 
     private static List<Integer> getPagesByRange(int startPage, int endPage) {
         List<Integer> pageList = new ArrayList<>();
