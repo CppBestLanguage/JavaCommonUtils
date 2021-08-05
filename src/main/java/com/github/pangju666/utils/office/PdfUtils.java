@@ -40,6 +40,16 @@ public class PdfUtils {
         return PDF_FILE_EXTENSION_SET.contains(fileExtension);
     }
 
+    public static PDDocument createFromDocument(PDDocument sourceDocument) {
+        PDDocument document = new PDDocument();
+        // 复制文档属性
+        document.getDocument().setVersion(sourceDocument.getVersion());
+        document.setDocumentInformation(sourceDocument.getDocumentInformation());
+        document.getDocumentCatalog().setViewerPreferences(sourceDocument.getDocumentCatalog().getViewerPreferences());
+        return document;
+    }
+
+
     /**
      * 获取文档对象
      *
@@ -78,131 +88,106 @@ public class PdfUtils {
         return PDDocument.load(documentFile);
     }
 
-    /**
-     * 获取文档封面
-     *
-     * @param documentStream 文档输入流
-     */
-    public static BufferedImage getDocumentCover(InputStream documentStream) throws IOException {
-        PDDocument document = getDocument(documentStream);
-        BufferedImage coverImage = getDocumentCover(document);
-        document.close();
-        return coverImage;
+    public static List<BufferedImage> getDocumentPagesAsImage(InputStream documentStream) throws IOException {
+        try (PDDocument document = getDocument(documentStream)) {
+            return getDocumentPagesAsImage(document);
+        }
     }
 
-    /**
-     * 获取文档封面
-     *
-     * @param documentFile 文档文件
-     */
-    public static BufferedImage getDocumentCover(File documentFile) throws IOException {
-        PDDocument document = getDocument(documentFile);
-        BufferedImage coverImage = getDocumentCover(document);
-        document.close();
-        return coverImage;
+    public static List<BufferedImage> getDocumentPagesAsImage(String documentPath) throws IOException {
+        return getDocumentPagesAsImage(FileUtils.getFile(documentPath));
     }
 
-    /**
-     * 获取文档封面
-     *
-     * @param documentPath 文档路径
-     */
-    public static BufferedImage getDocumentCover(String documentPath) throws IOException {
-        return getDocumentCover(FileUtils.getFile(documentPath));
+    public static List<BufferedImage> getDocumentPagesAsImage(File documentFile) throws IOException {
+        try (PDDocument document = getDocument(documentFile)) {
+            return getDocumentPagesAsImage(document);
+        }
     }
 
-    /**
-     * 获取文档封面
-     *
-     * @param document 文档对象
-     */
-    public static BufferedImage getDocumentCover(PDDocument document) throws IOException {
+    public static List<BufferedImage> getDocumentPagesAsImage(PDDocument document) throws IOException {
+        int pageCount = document.getNumberOfPages();
+        List<BufferedImage> pageImages = new ArrayList<>();
+        for (int i = 0; i < pageCount; i++) {
+            pageImages.add(getDocumentPageAsImage(document, i));
+        }
+        return pageImages;
+    }
+
+    public static BufferedImage getDocumentPageAsImage(InputStream documentStream, Integer pageIndex) throws IOException {
+        try (PDDocument document = getDocument(documentStream)) {
+            return getDocumentPageAsImage(document, pageIndex);
+        }
+    }
+
+    public static BufferedImage getDocumentPageAsImage(String documentPath, Integer pageIndex) throws IOException {
+        return getDocumentPageAsImage(FileUtils.getFile(documentPath), pageIndex);
+    }
+
+    public static BufferedImage getDocumentPageAsImage(File documentFile, Integer pageIndex) throws IOException {
+        try (PDDocument document = getDocument(documentFile)) {
+            return getDocumentPageAsImage(document, pageIndex);
+        }
+    }
+
+    public static BufferedImage getDocumentPageAsImage(PDDocument document, Integer pageIndex) throws IOException {
         PDFRenderer renderer = new PDFRenderer(document);
-        return renderer.renderImage(0);
+        return renderer.renderImage(pageIndex);
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocumentStream 源文档输入流
-     * @param fileStorePath        文件保存路径
      * @param splitPage            切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(InputStream sourceDocumentStream, File fileStorePath, int splitPage) throws IOException {
-        return splitDocumentByPages(getDocument(sourceDocumentStream), fileStorePath, splitPage);
-    }
-
-    /**
-     * 根据页码切分文档
-     *
-     * @param sourceDocumentFile  源文档文件
-     * @param splitStoreDirectory 文件保存路径
-     * @param splitPage           切分页数
-     * @return 切割结果
-     */
-    public static List<File> splitDocumentByPages(File sourceDocumentFile, File splitStoreDirectory, int splitPage) throws IOException {
-        return splitDocumentByPages(getDocument(sourceDocumentFile), splitStoreDirectory, splitPage);
+    public static List<PDDocument> splitDocumentByPages(InputStream sourceDocumentStream, int splitPage) throws IOException {
+        try (PDDocument document = getDocument(sourceDocumentStream)) {
+            return splitDocumentByPages(document, splitPage);
+        }
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocumentPath  源文档路径
-     * @param splitStoreDirectory 文件保存路径
      * @param splitPage           切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(String sourceDocumentPath, File splitStoreDirectory, int splitPage) throws IOException {
-        return splitDocumentByPages(getDocument(sourceDocumentPath), splitStoreDirectory, splitPage);
+    public static List<PDDocument> splitDocumentByPages(String sourceDocumentPath, int splitPage) throws IOException {
+        return splitDocumentByPages(FileUtils.getFile(sourceDocumentPath), splitPage);
+    }
+
+    /**
+     * 根据页码切分文档
+     *
+     * @param sourceDocumentFile  源文档文件
+     * @param splitPage           切分页数
+     * @return 切割结果
+     */
+    public static List<PDDocument> splitDocumentByPages(File sourceDocumentFile, int splitPage) throws IOException {
+        try (PDDocument document = getDocument(sourceDocumentFile)) {
+            return splitDocumentByPages(document, splitPage);
+        }
     }
 
     /**
      * 根据页码切分文档
      *
      * @param sourceDocument      源文档
-     * @param splitStoreDirectory 文件保存路径
      * @param splitPage           切分页数
      * @return 切割结果
      */
-    public static List<File> splitDocumentByPages(PDDocument sourceDocument, File splitStoreDirectory, int splitPage) throws IOException {
-        FileUtils.forceMkdir(splitStoreDirectory);
-        List<File> outputFileList = new ArrayList<>();
+    public static List<PDDocument> splitDocumentByPages(PDDocument sourceDocument, int splitPage) throws IOException {
+        List<PDDocument> outputFileList = new ArrayList<>();
         int totalPages = sourceDocument.getPages().getCount();
         for (int pageNumber = 1; pageNumber <= totalPages; pageNumber += splitPage) {
-            String splitFileName = pageNumber + PDF_FILE_EXTENSION;
-            File splitFile = FileUtils.getFile(splitStoreDirectory, splitFileName);
-            try(PDDocument document = getDocument(splitFile)) {
+            try (PDDocument document = createFromDocument(sourceDocument)) {
                 copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
-                document.save(splitFile.getAbsolutePath());
-                outputFileList.add(splitFile);
+                outputFileList.add(document);
             }
         }
-        sourceDocument.close();
         return outputFileList;
-    }
-
-    /**
-     * 拷贝源文档的指定页面至目标文档
-     *
-     * @param sourceDocumentFile 源文档
-     * @param targetDocumentFile 目标文档
-     * @param startPage          起始页码
-     * @param endPage            结束页码
-     */
-    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, int startPage, int endPage) throws IOException {
-        copyDocumentByPages(sourceDocumentFile, targetDocumentFile, getPagesByRange(startPage, endPage));
-    }
-
-    /**
-     * 拷贝源文档的指定页面至目标文档
-     *
-     * @param sourceDocumentFile 源文档
-     * @param targetDocumentFile 目标文档
-     * @param pageList           页码列表
-     */
-    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, List<Integer> pageList) throws IOException {
-        copyDocumentByPages(sourceDocumentFile.getAbsolutePath(), targetDocumentFile.getAbsolutePath(), pageList);
     }
 
     /**
@@ -225,12 +210,33 @@ public class PdfUtils {
      * @param pageList           页码列表
      */
     public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, List<Integer> pageList) throws IOException {
-        try(PDDocument sourceDocument = getDocument(sourceDocumentPath);
-            PDDocument targetDocument = new PDDocument()) {
-            // 复制文档内容
+        copyDocumentByPages(FileUtils.getFile(sourceDocumentPath), FileUtils.getFile(targetDocumentPath), pageList);
+    }
+
+    /**
+     * 拷贝源文档的指定页面至目标文档
+     *
+     * @param sourceDocumentFile 源文档
+     * @param targetDocumentFile 目标文档
+     * @param startPage          起始页码
+     * @param endPage            结束页码
+     */
+    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, int startPage, int endPage) throws IOException {
+        copyDocumentByPages(sourceDocumentFile, targetDocumentFile, getPagesByRange(startPage, endPage));
+    }
+
+    /**
+     * 拷贝源文档的指定页面至目标文档
+     *
+     * @param sourceDocumentFile 源文档
+     * @param targetDocumentFile 目标文档
+     * @param pageList           页码列表
+     */
+    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, List<Integer> pageList) throws IOException {
+        try (PDDocument sourceDocument = getDocument(sourceDocumentFile);
+             PDDocument targetDocument = createFromDocument(sourceDocument)) {
             copyDocumentByPages(sourceDocument, targetDocument, pageList);
-            //保存文档
-            targetDocument.save(targetDocumentPath);
+            targetDocument.save(targetDocumentFile);
         }
     }
 
@@ -267,10 +273,6 @@ public class PdfUtils {
             targetPage.setResources(sourcePage.getResources());
             copyAnnotations(targetPage);
         }
-        // 复制文档属性
-        targetDocument.getDocument().setVersion(sourceDocument.getVersion());
-        targetDocument.setDocumentInformation(sourceDocument.getDocumentInformation());
-        targetDocument.getDocumentCatalog().setViewerPreferences(sourceDocument.getDocumentCatalog().getViewerPreferences());
     }
 
     protected static void copyAnnotations(PDPage sourcePage) throws IOException {
