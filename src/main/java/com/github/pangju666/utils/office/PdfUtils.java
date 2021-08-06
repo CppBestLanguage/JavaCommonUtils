@@ -93,22 +93,36 @@ public class PdfUtils {
     }
 
     public static List<BufferedImage> getDocumentPagesAsImage(PDDocument document) throws IOException {
+        return getDocumentPagesAsImage(document, 72);
+    }
+
+    public static List<BufferedImage> getDocumentPagesAsImage(PDDocument document, float dpi) throws IOException {
         List<BufferedImage> pageImages = new ArrayList<>();
-        PDFRenderer renderer = new PDFRenderer(document);
-        for (int i = 0; i < document.getNumberOfPages(); i++) {
-            pageImages.add(getDocumentPageAsImage(renderer, i));
-        }
+        getDocumentPagesAsImage(document, dpi, ((bufferedImage, index) -> pageImages.add(bufferedImage)));
         return pageImages;
     }
 
-    public static BufferedImage getDocumentPageAsImage(PDFRenderer renderer, Integer pageIndex) throws IOException {
-        return renderer.renderImage(pageIndex);
+    public static void getDocumentPagesAsImage(PDDocument document, PageAction<BufferedImage> action) throws IOException {
+        getDocumentPagesAsImage(document, 72, action);
+    }
+
+    public static void getDocumentPagesAsImage(PDDocument document, float dpi, PageAction<BufferedImage> action) throws IOException {
+        PDFRenderer renderer = new PDFRenderer(document);
+        for (int i = 0; i < document.getNumberOfPages(); i++) {
+            BufferedImage image = renderer.renderImageWithDPI(i, dpi);
+            action.apply(image, i);
+        }
     }
 
     public static BufferedImage getDocumentPageAsImage(PDDocument document, Integer pageIndex) throws IOException {
-        PDFRenderer renderer = new PDFRenderer(document);
-        return renderer.renderImage(pageIndex);
+        return getDocumentPageAsImage(document, pageIndex, 72);
     }
+
+    public static BufferedImage getDocumentPageAsImage(PDDocument document, Integer pageIndex, float dpi) throws IOException {
+        PDFRenderer renderer = new PDFRenderer(document);
+        return renderer.renderImageWithDPI(pageIndex, dpi);
+    }
+
 
     /**
      * 根据页码切分文档
@@ -272,5 +286,9 @@ public class PdfUtils {
             ++page;
         }
         return pageList;
+    }
+
+    public interface PageAction<T> {
+        void apply(T t, int index) throws IOException;
     }
 }
