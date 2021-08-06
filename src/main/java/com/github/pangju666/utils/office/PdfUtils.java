@@ -7,6 +7,9 @@ import java.io.*;
 import java.nio.file.InvalidPathException;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
@@ -19,6 +22,8 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import org.apache.pdfbox.rendering.PDFRenderer;
+
+import javax.imageio.ImageIO;
 
 /**
  * PDF工具类
@@ -48,7 +53,6 @@ public class PdfUtils {
         document.getDocumentCatalog().setViewerPreferences(sourceDocument.getDocumentCatalog().getViewerPreferences());
         return document;
     }
-
 
     /**
      * 获取文档对象
@@ -88,45 +92,17 @@ public class PdfUtils {
         return PDDocument.load(documentFile);
     }
 
-    public static List<BufferedImage> getDocumentPagesAsImage(InputStream documentStream) throws IOException {
-        try (PDDocument document = getDocument(documentStream)) {
-            return getDocumentPagesAsImage(document);
-        }
-    }
-
-    public static List<BufferedImage> getDocumentPagesAsImage(String documentPath) throws IOException {
-        return getDocumentPagesAsImage(FileUtils.getFile(documentPath));
-    }
-
-    public static List<BufferedImage> getDocumentPagesAsImage(File documentFile) throws IOException {
-        try (PDDocument document = getDocument(documentFile)) {
-            return getDocumentPagesAsImage(document);
-        }
-    }
-
     public static List<BufferedImage> getDocumentPagesAsImage(PDDocument document) throws IOException {
-        int pageCount = document.getNumberOfPages();
         List<BufferedImage> pageImages = new ArrayList<>();
-        for (int i = 0; i < pageCount; i++) {
-            pageImages.add(getDocumentPageAsImage(document, i));
+        PDFRenderer renderer = new PDFRenderer(document);
+        for (int i = 0; i < document.getNumberOfPages(); i++) {
+            pageImages.add(getDocumentPageAsImage(renderer, i));
         }
         return pageImages;
     }
 
-    public static BufferedImage getDocumentPageAsImage(InputStream documentStream, Integer pageIndex) throws IOException {
-        try (PDDocument document = getDocument(documentStream)) {
-            return getDocumentPageAsImage(document, pageIndex);
-        }
-    }
-
-    public static BufferedImage getDocumentPageAsImage(String documentPath, Integer pageIndex) throws IOException {
-        return getDocumentPageAsImage(FileUtils.getFile(documentPath), pageIndex);
-    }
-
-    public static BufferedImage getDocumentPageAsImage(File documentFile, Integer pageIndex) throws IOException {
-        try (PDDocument document = getDocument(documentFile)) {
-            return getDocumentPageAsImage(document, pageIndex);
-        }
+    public static BufferedImage getDocumentPageAsImage(PDFRenderer renderer, Integer pageIndex) throws IOException {
+        return renderer.renderImage(pageIndex);
     }
 
     public static BufferedImage getDocumentPageAsImage(PDDocument document, Integer pageIndex) throws IOException {
@@ -137,55 +113,17 @@ public class PdfUtils {
     /**
      * 根据页码切分文档
      *
-     * @param sourceDocumentStream 源文档输入流
-     * @param splitPage            切分页数
-     * @return 切割结果
-     */
-    public static List<PDDocument> splitDocumentByPages(InputStream sourceDocumentStream, int splitPage) throws IOException {
-        try (PDDocument document = getDocument(sourceDocumentStream)) {
-            return splitDocumentByPages(document, splitPage);
-        }
-    }
-
-    /**
-     * 根据页码切分文档
-     *
-     * @param sourceDocumentPath  源文档路径
-     * @param splitPage           切分页数
-     * @return 切割结果
-     */
-    public static List<PDDocument> splitDocumentByPages(String sourceDocumentPath, int splitPage) throws IOException {
-        return splitDocumentByPages(FileUtils.getFile(sourceDocumentPath), splitPage);
-    }
-
-    /**
-     * 根据页码切分文档
-     *
-     * @param sourceDocumentFile  源文档文件
-     * @param splitPage           切分页数
-     * @return 切割结果
-     */
-    public static List<PDDocument> splitDocumentByPages(File sourceDocumentFile, int splitPage) throws IOException {
-        try (PDDocument document = getDocument(sourceDocumentFile)) {
-            return splitDocumentByPages(document, splitPage);
-        }
-    }
-
-    /**
-     * 根据页码切分文档
-     *
-     * @param sourceDocument      源文档
-     * @param splitPage           切分页数
+     * @param sourceDocument 源文档
+     * @param splitPage      切分页数
      * @return 切割结果
      */
     public static List<PDDocument> splitDocumentByPages(PDDocument sourceDocument, int splitPage) throws IOException {
         List<PDDocument> outputFileList = new ArrayList<>();
         int totalPages = sourceDocument.getPages().getCount();
         for (int pageNumber = 1; pageNumber <= totalPages; pageNumber += splitPage) {
-            try (PDDocument document = createFromDocument(sourceDocument)) {
-                copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
-                outputFileList.add(document);
-            }
+            PDDocument document = createFromDocument(sourceDocument);
+            copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
+            outputFileList.add(document);
         }
         return outputFileList;
     }
@@ -264,8 +202,8 @@ public class PdfUtils {
 
         // 页码排序并过滤
         List<Integer> pageNumberList = pageList.stream().distinct()
-                    .filter(pageNumber -> pageNumber >= 1 && pageNumber <= maxPageNumber)
-                    .sorted(Integer::compareTo).collect(Collectors.toList());
+                .filter(pageNumber -> pageNumber >= 1 && pageNumber <= maxPageNumber)
+                .sorted(Integer::compareTo).collect(Collectors.toList());
 
         for (Integer pageNumber : pageNumberList) {
             PDPage sourcePage = sourceDocument.getPage(pageNumber - 1);
