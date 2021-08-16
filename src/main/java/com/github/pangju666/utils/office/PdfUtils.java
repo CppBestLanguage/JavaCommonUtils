@@ -7,12 +7,14 @@ import java.io.*;
 import java.nio.file.InvalidPathException;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.cos.COSDictionary;
+import org.apache.pdfbox.io.MemoryUsageSetting;
+import org.apache.pdfbox.multipdf.PDFCloneUtility;
+import org.apache.pdfbox.multipdf.PDFMergerUtility;
+import org.apache.pdfbox.multipdf.PageExtractor;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.interactive.action.PDAction;
@@ -22,8 +24,6 @@ import org.apache.pdfbox.pdmodel.interactive.annotation.PDAnnotationLink;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDDestination;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageDestination;
 import org.apache.pdfbox.rendering.PDFRenderer;
-
-import javax.imageio.ImageIO;
 
 /**
  * PDF工具类
@@ -102,11 +102,13 @@ public class PdfUtils {
         return pageImages;
     }
 
-    public static void getDocumentPagesAsImage(PDDocument document, PageAction<BufferedImage> action) throws IOException {
+    public static void getDocumentPagesAsImage(PDDocument document,
+                                               PageAction<BufferedImage> action) throws IOException {
         getDocumentPagesAsImage(document, 72, action);
     }
 
-    public static void getDocumentPagesAsImage(PDDocument document, float dpi, PageAction<BufferedImage> action) throws IOException {
+    public static void getDocumentPagesAsImage(PDDocument document, float dpi,
+                                               PageAction<BufferedImage> action) throws IOException {
         PDFRenderer renderer = new PDFRenderer(document);
         for (int i = 0; i < document.getNumberOfPages(); i++) {
             BufferedImage image = renderer.renderImageWithDPI(i, dpi);
@@ -118,11 +120,74 @@ public class PdfUtils {
         return getDocumentPageAsImage(document, pageIndex, 72);
     }
 
-    public static BufferedImage getDocumentPageAsImage(PDDocument document, Integer pageIndex, float dpi) throws IOException {
+    public static BufferedImage getDocumentPageAsImage(PDDocument document, Integer pageIndex,
+                                                       float dpi) throws IOException {
         PDFRenderer renderer = new PDFRenderer(document);
         return renderer.renderImageWithDPI(pageIndex, dpi);
     }
 
+    public static void mergeDocumentByOptimizeResourcesMode(List<PDDocument> documents, File targetFile,
+                                                 MemoryUsageSetting memoryUsageSetting) throws IOException {
+
+        PDDocument result = mergeDocumentByOptimizeResourcesMode(documents, memoryUsageSetting);
+        result.save(targetFile);
+        result.close();
+
+        for (PDDocument document : documents) {
+            document.close();
+        }
+    }
+
+    public static PDDocument mergeDocumentByOptimizeResourcesMode(List<PDDocument> documents,
+                                                       MemoryUsageSetting memoryUsageSetting) throws IOException {
+        PDDocument result = new PDDocument(memoryUsageSetting);
+        PDFCloneUtility cloner = new PDFCloneUtility(result);
+
+        for (PDDocument document : documents) {
+            for (PDPage page : document.getPages()) {
+                PDPage newPage = new PDPage((COSDictionary) cloner.cloneForNewDocument(page.getCOSObject()));
+                copyPage(page, newPage);
+                result.addPage(newPage);
+            }
+        }
+        return result;
+    }
+
+    public static void mergeDocumentByOptimizeResourcesMode(PDDocument source, PDDocument target) throws IOException {
+        PDFCloneUtility cloner = new PDFCloneUtility(target);
+
+        for (PDPage page : source.getPages()) {
+            PDPage newPage = new PDPage((COSDictionary) cloner.cloneForNewDocument(page.getCOSObject()));
+            copyPage(page, newPage);
+            target.addPage(newPage);
+        }
+    }
+
+    public static void mergeDocumentByLegacyMode(List<PDDocument> documents, File targetFile,
+                                                 MemoryUsageSetting memoryUsageSetting) throws IOException {
+        PDDocument result = mergeDocumentByLegacyMode(documents, memoryUsageSetting);
+        result.save(targetFile);
+        result.close();
+
+        for (PDDocument document : documents) {
+            document.close();
+        }
+    }
+
+    public static PDDocument mergeDocumentByLegacyMode(List<PDDocument> documents,
+                                                       MemoryUsageSetting memoryUsageSetting) throws IOException {
+        PDFMergerUtility mergerUtility = new PDFMergerUtility();
+        PDDocument result = new PDDocument(memoryUsageSetting);
+        for (PDDocument document : documents) {
+            mergerUtility.appendDocument(result, document);
+        }
+        return result;
+    }
+
+    public static void mergeDocumentByLegacyMode(PDDocument source, PDDocument target) throws IOException {
+        PDFMergerUtility mergerUtility = new PDFMergerUtility();
+        mergerUtility.appendDocument(target, source);
+    }
 
     /**
      * 根据页码切分文档
@@ -133,13 +198,15 @@ public class PdfUtils {
      */
     public static List<PDDocument> splitDocumentByPages(PDDocument sourceDocument, int splitPage) throws IOException {
         List<PDDocument> outputFileList = new ArrayList<>();
-        int totalPages = sourceDocument.getPages().getCount();
+        int totalPages = sourceDocument.getNumberOfPages();
         for (int pageNumber = 1; pageNumber <= totalPages; pageNumber += splitPage) {
-            PDDocument document = createFromDocument(sourceDocument);
-            copyDocumentByPages(sourceDocument, document, pageNumber, pageNumber + splitPage - 1);
-            outputFileList.add(document);
+            outputFileList.add(copyDocumentByPages(sourceDocument, pageNumber, pageNumber + splitPage - 1));
         }
         return outputFileList;
+    }
+
+    public static PDDocument copyDocument(PDDocument document) throws IOException {
+        return copyDocumentByPages(document, 1, document.getNumberOfPages());
     }
 
     /**
@@ -150,8 +217,10 @@ public class PdfUtils {
      * @param startPage          起始页码
      * @param endPage            结束页码
      */
-    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, int startPage, int endPage) throws IOException {
-        copyDocumentByPages(sourceDocumentPath, targetDocumentPath, getPagesByRange(startPage, endPage));
+    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath,
+                                           int startPage, int endPage) throws IOException {
+        copyDocumentByPages(FileUtils.getFile(sourceDocumentPath),
+                FileUtils.getFile(targetDocumentPath), startPage, endPage);
     }
 
     /**
@@ -161,7 +230,8 @@ public class PdfUtils {
      * @param targetDocumentPath 目标文档
      * @param pageList           页码列表
      */
-    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath, List<Integer> pageList) throws IOException {
+    public static void copyDocumentByPages(String sourceDocumentPath, String targetDocumentPath,
+                                           List<Integer> pageList) throws IOException {
         copyDocumentByPages(FileUtils.getFile(sourceDocumentPath), FileUtils.getFile(targetDocumentPath), pageList);
     }
 
@@ -173,8 +243,12 @@ public class PdfUtils {
      * @param startPage          起始页码
      * @param endPage            结束页码
      */
-    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, int startPage, int endPage) throws IOException {
-        copyDocumentByPages(sourceDocumentFile, targetDocumentFile, getPagesByRange(startPage, endPage));
+    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile,
+                                           int startPage, int endPage) throws IOException {
+        try (PDDocument sourceDocument = getDocument(sourceDocumentFile)) {
+            PDDocument result = copyDocumentByPages(sourceDocument, startPage, endPage);
+            result.save(targetDocumentFile);
+        }
     }
 
     /**
@@ -184,11 +258,11 @@ public class PdfUtils {
      * @param targetDocumentFile 目标文档
      * @param pageList           页码列表
      */
-    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile, List<Integer> pageList) throws IOException {
-        try (PDDocument sourceDocument = getDocument(sourceDocumentFile);
-             PDDocument targetDocument = createFromDocument(sourceDocument)) {
-            copyDocumentByPages(sourceDocument, targetDocument, pageList);
-            targetDocument.save(targetDocumentFile);
+    public static void copyDocumentByPages(File sourceDocumentFile, File targetDocumentFile,
+                                           List<Integer> pageList) throws IOException {
+        try (PDDocument sourceDocument = getDocument(sourceDocumentFile)) {
+            PDDocument result = copyDocumentByPages(sourceDocument, pageList);
+            result.save(targetDocumentFile);
         }
     }
 
@@ -196,96 +270,73 @@ public class PdfUtils {
      * 拷贝源文档的指定页面至目标文档
      *
      * @param sourceDocument 源文档
-     * @param targetDocument 目标文档
      * @param startPage      起始页码
      * @param endPage        结束页码
      */
-    public static void copyDocumentByPages(PDDocument sourceDocument, PDDocument targetDocument, int startPage, int endPage) throws IOException {
-        copyDocumentByPages(sourceDocument, targetDocument, getPagesByRange(startPage, endPage));
+    public static PDDocument copyDocumentByPages(PDDocument sourceDocument,
+                                                 int startPage, int endPage) throws IOException {
+        // 防止页码溢出
+        int maxPage = Math.min(sourceDocument.getNumberOfPages(), endPage);
+        PageExtractor pageExtractor = new PageExtractor(sourceDocument, startPage, maxPage);
+        pageExtractor.setStartPage(startPage);
+        pageExtractor.setEndPage(endPage);
+        return pageExtractor.extract();
     }
 
     /**
      * 拷贝源文档的指定页面至目标文档
      *
      * @param sourceDocument 源文档
-     * @param targetDocument 目标文档
      * @param pageList       页码列表
      */
-    public static void copyDocumentByPages(PDDocument sourceDocument, PDDocument targetDocument, List<Integer> pageList) throws IOException {
+    public static PDDocument copyDocumentByPages(PDDocument sourceDocument,
+                                                 List<Integer> pageList) throws IOException {
         int maxPageNumber = sourceDocument.getNumberOfPages();
-
-        // 页码排序并过滤
+        // 页码去重，过滤掉溢出的页码并排序
         List<Integer> pageNumberList = pageList.stream().distinct()
                 .filter(pageNumber -> pageNumber >= 1 && pageNumber <= maxPageNumber)
                 .sorted(Integer::compareTo).collect(Collectors.toList());
 
+        PDDocument targetDocument = createFromDocument(sourceDocument);
         for (Integer pageNumber : pageNumberList) {
             PDPage sourcePage = sourceDocument.getPage(pageNumber - 1);
             PDPage targetPage = targetDocument.importPage(sourcePage);
-            targetPage.setResources(sourcePage.getResources());
-            copyAnnotations(targetPage);
+            copyPage(sourcePage, targetPage);
         }
+        return targetDocument;
     }
 
-    protected static void copyAnnotations(PDPage sourcePage) throws IOException {
-        List<PDAnnotation> annotations = sourcePage.getAnnotations();
-        for (PDAnnotation annotation : annotations) {
-            if (annotation instanceof PDAnnotationLink) {
-                PDAnnotationLink link = (PDAnnotationLink) annotation;
+    protected static void copyPage(PDPage source, PDPage target) throws IOException {
+        target.setCropBox(source.getCropBox());
+        target.setMediaBox(source.getMediaBox());
+        target.setResources(source.getResources());
+        target.setRotation(source.getRotation());
+        copyAnnotations(target);
+    }
+
+    protected static void copyAnnotations(PDPage page) throws IOException
+    {
+        List<PDAnnotation> annotations = page.getAnnotations();
+        for (PDAnnotation annotation : annotations)
+        {
+            if (annotation instanceof PDAnnotationLink)
+            {
+                PDAnnotationLink link = (PDAnnotationLink)annotation;
                 PDDestination destination = link.getDestination();
                 PDAction action = link.getAction();
-                if (destination == null && action instanceof PDActionGoTo) {
+                if (destination == null && action instanceof PDActionGoTo)
+                {
                     destination = ((PDActionGoTo) action).getDestination();
                 }
-                if (destination instanceof PDPageDestination) {
+                if (destination instanceof PDPageDestination)
+                {
+                    // TODO 在拆分结果中保留指向页面的链接
                     ((PDPageDestination) destination).setPage(null);
                 }
             }
+            // TODO 在拆分结果中保留指向页面的链接
             annotation.setPage(null);
         }
-    }
-
-    /*protected static void copyBookMarks(PDDocument sourceDocument, PDDocument targetDocument, List<Integer> pageList) {
-        // 获取文档标注
-        PdfBookmarkCollection sourceBookmarks = sourceDocument.getBookmarks();
-        PdfBookmarkCollection targetBookmarks = targetDocument.getBookmarks();
-
-        // 遍历源文档标注
-        for (Object object : sourceBookmarks) {
-            PdfBookmark sourceBookmark = (PdfBookmark) object;
-            // 获取文档标注所指向页面
-            PdfDestination sourceDestination = sourceBookmark.getDestination();
-            // 判断指向页面是否需要复制
-            int pageIndex = pageList.indexOf(sourceDestination.getPageNumber() + 1);
-            if (pageIndex != -1) {
-                // 若需要复制，则拷贝标注信息至新文档
-                PdfBookmark targetBookmark = targetBookmarks.add(sourceBookmark.getTitle());
-                targetBookmark.setColor(sourceBookmark.getColor());
-                targetBookmark.setDisplayStyle(sourceBookmark.getDisplayStyle());
-                targetBookmark.setExpandBookmark(sourceBookmark.getExpandBookmark());
-                targetBookmark.setAction(sourceBookmark.getAction());
-
-                PdfDestination targetDestination = new PdfDestination(targetDocument.getPages().get(pageIndex));
-                targetDestination.setRectangle(sourceDestination.getRectangle());
-                targetDestination.setLocation(sourceDestination.getLocation());
-                targetDestination.setMode(sourceDestination.getMode());
-                targetDestination.setZoom(sourceDestination.getZoom());
-                targetBookmark.setDestination(targetDestination);
-            }
-        }
-    }*/
-
-    private static List<Integer> getPagesByRange(int startPage, int endPage) {
-        List<Integer> pageList = new ArrayList<>();
-        if (startPage == endPage) {
-            return Collections.singletonList(startPage);
-        }
-        int page = startPage;
-        while (page <= endPage) {
-            pageList.add(page);
-            ++page;
-        }
-        return pageList;
     }
 
     public interface PageAction<T> {

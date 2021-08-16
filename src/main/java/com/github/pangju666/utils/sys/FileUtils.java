@@ -269,17 +269,6 @@ public class FileUtils extends org.apache.commons.io.FileUtils {
     }
 
     /**
-     * 获取文件
-     *
-     * @param filePath 文件路径
-     * @return 文件对象
-     * @since 1.0
-     */
-    public static File getFile(String filePath) {
-        return new File(filePath);
-    }
-
-    /**
      * 使用UUID和当前时间生成编码后的文件名称，
      *
      * @param filePath 原文件路径
