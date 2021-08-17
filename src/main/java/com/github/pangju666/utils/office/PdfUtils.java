@@ -127,7 +127,7 @@ public class PdfUtils {
     }
 
     public static void mergeDocumentByOptimizeResourcesMode(List<PDDocument> documents, File targetFile,
-                                                 MemoryUsageSetting memoryUsageSetting) throws IOException {
+                                                            MemoryUsageSetting memoryUsageSetting) throws IOException {
 
         PDDocument result = mergeDocumentByOptimizeResourcesMode(documents, memoryUsageSetting);
         result.save(targetFile);
@@ -139,7 +139,7 @@ public class PdfUtils {
     }
 
     public static PDDocument mergeDocumentByOptimizeResourcesMode(List<PDDocument> documents,
-                                                       MemoryUsageSetting memoryUsageSetting) throws IOException {
+                                                                  MemoryUsageSetting memoryUsageSetting) throws IOException {
         PDDocument result = new PDDocument(memoryUsageSetting);
         PDFCloneUtility cloner = new PDFCloneUtility(result);
 
@@ -314,22 +314,17 @@ public class PdfUtils {
         copyAnnotations(target);
     }
 
-    protected static void copyAnnotations(PDPage page) throws IOException
-    {
+    protected static void copyAnnotations(PDPage page) throws IOException {
         List<PDAnnotation> annotations = page.getAnnotations();
-        for (PDAnnotation annotation : annotations)
-        {
-            if (annotation instanceof PDAnnotationLink)
-            {
-                PDAnnotationLink link = (PDAnnotationLink)annotation;
+        for (PDAnnotation annotation : annotations) {
+            if (annotation instanceof PDAnnotationLink) {
+                PDAnnotationLink link = (PDAnnotationLink) annotation;
                 PDDestination destination = link.getDestination();
                 PDAction action = link.getAction();
-                if (destination == null && action instanceof PDActionGoTo)
-                {
+                if (destination == null && action instanceof PDActionGoTo) {
                     destination = ((PDActionGoTo) action).getDestination();
                 }
-                if (destination instanceof PDPageDestination)
-                {
+                if (destination instanceof PDPageDestination) {
                     // TODO 在拆分结果中保留指向页面的链接
                     ((PDPageDestination) destination).setPage(null);
                 }

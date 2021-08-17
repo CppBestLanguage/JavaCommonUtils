@@ -191,7 +191,7 @@
                 </configuration>
             </plugin>
             <!--配置生成Javadoc包-->
-            <plugin>
+          <!--  <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.2.0</version>
@@ -212,7 +212,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <!--配置生成源码包-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
