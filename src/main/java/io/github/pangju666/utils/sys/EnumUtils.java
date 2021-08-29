@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class EnumUtils {
+public class EnumUtils extends org.apache.commons.lang3.EnumUtils {
     public static <E extends Enum<?>> E valueOf(Class<E> enumClass, Object value, Method method) {
         E[] enumConstants = enumClass.getEnumConstants();
         for (E enumConstant : enumConstants) {

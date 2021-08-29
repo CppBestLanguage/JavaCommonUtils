@@ -1,4 +1,4 @@
-package io.github.pangju666.utils.security;
+package io.github.pangju666.utils.codec;
 
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -21,12 +21,12 @@ import org.apache.commons.logging.LogFactory;
  * @see Cipher
  * @see KeyGenerator
  */
-public class AESEncryptUtils {
+public class AESUtils {
     private static final String ALGORITHM_NAME = "AES";
     private static final Base64 BASE_64 = new Base64();
-    private static final Log log = LogFactory.getLog(AESEncryptUtils.class);
+    private static final Log log = LogFactory.getLog(AESUtils.class);
 
-    private AESEncryptUtils() {
+    private AESUtils() {
     }
 
     /**

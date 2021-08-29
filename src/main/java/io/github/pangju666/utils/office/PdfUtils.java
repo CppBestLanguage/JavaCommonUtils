@@ -1,6 +1,6 @@
 package io.github.pangju666.utils.office;
 
-import io.github.pangju666.utils.sys.FileUtils;
+import io.github.pangju666.utils.io.FileUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.*;

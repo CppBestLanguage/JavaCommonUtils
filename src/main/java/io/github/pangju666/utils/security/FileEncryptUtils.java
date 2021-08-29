@@ -1,6 +1,6 @@
 package io.github.pangju666.utils.security;
 
-import io.github.pangju666.utils.sys.FileUtils;
+import io.github.pangju666.utils.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.validation.constraints.NotNull;
