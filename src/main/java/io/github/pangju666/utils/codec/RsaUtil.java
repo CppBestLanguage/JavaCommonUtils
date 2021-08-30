@@ -1,84 +1,145 @@
 package io.github.pangju666.utils.codec;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.crypto.Cipher;
-import java.security.KeyFactory;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import javax.crypto.*;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Base64;
-
 
 /**
- * @author alvis
+ * RSA加密工具类
+ *
+ * @author 胖橘
+ * @version 1.0
+ * @since 1.0
  */
 public class RsaUtil {
+    protected static final String ALGORITHM_NAME = "RSA";
+
+    protected RsaUtil() {
+    }
+
     /**
-     * String to hold name of the encryption algorithm.
+     * 生成密钥
+     *
+     * @return 公私密钥数据对像
      */
-    private static final String ALGORITHM = "RSA";
+    public static RsaKeyPair generateSecretKey() throws NoSuchAlgorithmException {
+        return generateSecretKey(128);
+    }
 
-    private static final String CHAR_SET = "utf-8";
-
-    private static final Logger logger = LoggerFactory.getLogger(RsaUtil.class);
-
-    public static String rsaEncode(String publicCertificate, String text) {
+    /**
+     * 生成密钥
+     *
+     * @param keySize 密钥长度
+     * @return 公私密钥数据对像
+     */
+    public static RsaKeyPair generateSecretKey(int keySize) {
         try {
-            byte[] publicBytes = baseStrToByte(publicCertificate);
-            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(publicBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
-            PublicKey pubKey = keyFactory.generatePublic(keySpec);
-            // get an RSA cipher object and print the provider
-            final Cipher cipher = Cipher.getInstance(ALGORITHM);
-            // encrypt the plain text using the public key
-            cipher.init(Cipher.ENCRYPT_MODE, pubKey);
-            byte[] cipherBytes = cipher.doFinal(text.getBytes(CHAR_SET));
-            return baseByteToStr(cipherBytes);
-        } catch (Exception e) {
-            logger.error("publicCertificate:{}  \r\n  text:{}", publicCertificate, text, e);
+            KeyPairGenerator generator = KeyPairGenerator.getInstance(ALGORITHM_NAME);
+            generator.initialize(keySize);
+            KeyPair keyPair = generator.generateKeyPair();
+            byte[] publicKey = keyPair.getPublic().getEncoded();
+            byte[] privateKey = keyPair.getPrivate().getEncoded();
+            return new RsaKeyPair(publicKey, privateKey);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("RSA加密算法在当前环境下不可用", e);
         }
-        return null;
     }
 
-
-    public static String rsaDecode(String privateCertificate, String text) {
+    /**
+     * 加密
+     *
+     * @param source 源数据
+     * @param publicKey 公钥
+     * @return 加密后的数据
+     */
+    public static byte[] encode(byte[] source, byte[] publicKey) {
         try {
-            byte[] privateBytes = baseStrToByte(privateCertificate);
-            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(privateBytes);
-            KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM);
-            PrivateKey priKey = keyFactory.generatePrivate(keySpec);
-            byte[] cipherText;
-            // get an RSA cipher object and print the provider
-            final Cipher cipher = Cipher.getInstance(ALGORITHM);
-            // encrypt the plain text using the public key
-            cipher.init(Cipher.DECRYPT_MODE, priKey);
-            byte[] textbyte = baseStrToByte(text);
-            cipherText = cipher.doFinal(textbyte);
-            return new String(cipherText, CHAR_SET);
-        } catch (Exception e) {
-            logger.error("privateCertificate:{}  \r\n  text:{}", privateCertificate, text, e);
+            Cipher cipher = Cipher.getInstance(ALGORITHM_NAME);
+            KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_NAME);
+            X509EncodedKeySpec encodedKeySpec = new X509EncodedKeySpec(publicKey);
+            cipher.init(Cipher.ENCRYPT_MODE, keyFactory.generatePublic(encodedKeySpec));
+            return cipher.doFinal(source);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("RSA加密算法在当前环境下不可用", e);
+        } catch (InvalidKeySpecException | InvalidKeyException |
+                IllegalBlockSizeException | BadPaddingException e) {
+            throw new RuntimeException("RSA加密失败", e);
         }
-        return null;
     }
 
-
     /**
-     * @param str str
-     * @return byte[]
+     * 加密，并将结果转换为字符串
+     *
+     * @param source 源数据
+     * @param publicKey 公钥
+     * @return 加密后的数据字符串
      */
-    private static byte[] baseStrToByte(String str) {
-        return Base64.getDecoder().decode(str);
+    public static String encodeToString(byte[] source, byte[] publicKey) {
+        return new String(encode(source, publicKey), StandardCharsets.UTF_8);
     }
 
+    /**
+     * 解密
+     *
+     * @param source 源数据
+     * @param privateKey 私钥
+     * @return 解密后的数据
+     */
+    public static byte[] decode(byte[] source, byte[] privateKey) {
+        try {
+            Cipher cipher = Cipher.getInstance(ALGORITHM_NAME);
+            KeyFactory keyFactory = KeyFactory.getInstance(ALGORITHM_NAME);
+            PKCS8EncodedKeySpec encodedKeySpec = new PKCS8EncodedKeySpec(privateKey);
+            cipher.init(Cipher.DECRYPT_MODE, keyFactory.generatePrivate(encodedKeySpec));
+            return cipher.doFinal(source);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException e) {
+            throw new RuntimeException("RSA加密算法在当前环境下不可用", e);
+        } catch (InvalidKeySpecException | InvalidKeyException |
+                IllegalBlockSizeException | BadPaddingException e) {
+            throw new RuntimeException("RSA加密失败", e);
+        }
+    }
 
     /**
-     * @param bytes bytes
-     * @return String
+     * 解密
+     *
+     * @param source 源数据
+     * @param privateKey 密钥
+     * @return 解密后的数据
      */
-    private static String baseByteToStr(byte[] bytes) {
-        return Base64.getEncoder().encodeToString(bytes);
+    public static byte[] decode(String source, byte[] privateKey) {
+        return decode(source.getBytes(), privateKey);
+    }
+
+    public static class RsaKeyPair {
+        private byte[] publicKey;
+        private byte[] privateKey;
+
+        public RsaKeyPair() {
+        }
+
+        public RsaKeyPair(byte[] publicKey, byte[] privateKey) {
+            this.publicKey = publicKey;
+            this.privateKey = privateKey;
+        }
+
+        public byte[] getPublicKey() {
+            return publicKey;
+        }
+
+        public void setPublicKey(byte[] publicKey) {
+            this.publicKey = publicKey;
+        }
+
+        public byte[] getPrivateKey() {
+            return privateKey;
+        }
+
+        public void setPrivateKey(byte[] privateKey) {
+            this.privateKey = privateKey;
+        }
     }
 }

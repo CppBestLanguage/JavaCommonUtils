@@ -9,5 +9,7 @@ import org.apache.commons.codec.digest.Md5Crypt;
  * @version 1.0
  * @since 1.0
  */
-public class Md5Util extends Md5Crypt {
+public class Md5Utils extends Md5Crypt {
+    protected Md5Utils() {
+    }
 }
