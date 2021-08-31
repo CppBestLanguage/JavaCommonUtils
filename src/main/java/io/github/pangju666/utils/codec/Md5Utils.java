@@ -8,6 +8,8 @@ import org.apache.commons.codec.digest.Md5Crypt;
  * @author 胖橘
  * @version 1.0
  * @since 1.0
+ *
+ * @see org.apache.commons.codec.digest.Md5Crypt
  */
 public class Md5Utils extends Md5Crypt {
     protected Md5Utils() {

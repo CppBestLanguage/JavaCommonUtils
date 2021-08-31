@@ -1,7 +1,8 @@
 package io.github.pangju666.utils.security;
 
-import io.github.pangju666.utils.sys.RandomUtils;
+import io.github.pangju666.utils.common.RandomUtils;
 
+//TODO: 业务功能整合至随机数工具类
 /**
  * 验证码生成器
  *
@@ -10,6 +11,7 @@ import io.github.pangju666.utils.sys.RandomUtils;
  * @version 1.1 2020-3-31 增加生成器模式枚举和生成器接口
  * @since 1.0
  */
+@Deprecated
 public final class VerificationCodeUtils {
     /** 验证码模式 */
     public enum Mode {

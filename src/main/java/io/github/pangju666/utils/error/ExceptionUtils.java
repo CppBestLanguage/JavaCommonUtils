@@ -6,6 +6,7 @@ package io.github.pangju666.utils.error;
  * @author 胖橘
  * @version 1.0
  * @since 1.0
+ *
  * @see org.apache.commons.lang3.exception.ExceptionUtils
  */
 public class ExceptionUtils extends org.apache.commons.lang3.exception.ExceptionUtils {

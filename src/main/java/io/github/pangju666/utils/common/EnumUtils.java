@@ -1,4 +1,4 @@
-package io.github.pangju666.utils.sys;
+package io.github.pangju666.utils.common;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

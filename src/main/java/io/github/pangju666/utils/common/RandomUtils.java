@@ -1,4 +1,4 @@
-package io.github.pangju666.utils.sys;
+package io.github.pangju666.utils.common;
 
 import java.util.Random;
 import java.util.UUID;
@@ -7,7 +7,7 @@ import java.util.UUID;
  * 随机数工具类
  *
  * @author 胖橘
- * @version 1.0 2020-3-31
+ * @version 1.0
  * @since 1.0
  *
  * @see org.apache.commons.lang3.RandomUtils
@@ -25,8 +25,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      *
      * @param bound 取值范围
      * @return 返回随机数字
-     *
-     * @since 1.0
      */
     public static int nextInt(int bound) {
         return RANDOM.nextInt(bound);
@@ -36,8 +34,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      * 生成指定范围内的字符(ascii表内)
      *
      * @return 返回随机字符
-     *
-     * @since 1.0
      */
     public static char nextCharacter() {
         return (char) (nextInt(ASCII_MIN, ASCII_MAX));
@@ -49,8 +45,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
      * @param min 最小取值
      * @param max 最大取值
      * @return 返回[min-max]之间的字符
-     *
-     * @since 1.0
      */
     public static char nextCharacter(char min, char max) {
         return (char) (nextInt(min, max));
@@ -58,8 +52,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机数字字符
-     *
-     * @since 1.0
      */
     public static char nextNumberCharacter() {
         return nextCharacter('0', '9');
@@ -67,8 +59,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机字母
-     *
-     * @since 1.0
      */
     public static char nextLetterCharacter() {
         return nextCharacter('A', 'z');
@@ -76,8 +66,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机字母或数字
-     *
-     * @since 1.0
      */
     public static char nextLetterOrNumberCharacter() {
         if (RandomUtils.nextBoolean()) {
@@ -89,8 +77,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机大写字母
-     *
-     * @since 1.0
      */
     public static char nextUppercaseCharacter() {
         return nextCharacter('A', 'Z');
@@ -98,8 +84,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机小写字母
-     *
-     * @since 1.0
      */
     public static char nextLowerCaseCharacter() {
         return nextCharacter('a', 'z');
@@ -107,8 +91,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机特殊字符
-     *
-     * @since 1.0
      */
     public static char nextSpecialCharacter() {
         int range = nextInt(3);
@@ -122,8 +104,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机中文字符
-     *
-     * @since 1.0
      */
     public static char nextChineseCharacter() {
         return nextCharacter('\u4e00', '\u9fa5');
@@ -131,8 +111,6 @@ public class RandomUtils extends org.apache.commons.lang3.RandomUtils {
 
     /**
      * 生成随机的UUID
-     *
-     * @since 1.0
      */
     public static String nexUUIDString() {
         return UUID.randomUUID().toString();

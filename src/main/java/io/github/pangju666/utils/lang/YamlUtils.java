@@ -9,18 +9,19 @@ import java.util.Map;
  * yaml工具类
  *
  * @author 胖橘
- * @version 1.0 2020-10-31
- * @since 1.1
+ * @version 1.0
+ * @since 1.0
+ *
+ * @see org.yaml.snakeyaml.Yaml
  */
 public class YamlUtils {
-	private YamlUtils() { }
+	protected YamlUtils() { }
 
 	/**
 	 * 获取yaml映射
 	 *
 	 * @param yamlStr yaml字符串
 	 * @return 键值
-	 * @since 1.0
 	 */
 	private static Map<String, Object> parseYaml(final String yamlStr) {
 		Yaml yaml = new Yaml();
@@ -32,7 +33,6 @@ public class YamlUtils {
 	 *
 	 * @param yamlFile yaml文件
 	 * @return 键值
-	 * @since 1.0
 	 */
 	private static Map<String, Object> parseYaml(final File yamlFile) throws FileNotFoundException {
 		Yaml yaml = new Yaml();
@@ -44,7 +44,6 @@ public class YamlUtils {
 	 *
 	 * @param stream yaml输入流
 	 * @return 键值
-	 * @since 1.0
 	 */
 	private static Map<String, Object> parseYaml(final InputStream stream) {
 		Yaml yaml = new Yaml();
@@ -57,8 +56,8 @@ public class YamlUtils {
 	 * @param key 键名，如：xxx.xxx.xxx
 	 * @param yamlMap yaml映射
 	 * @return 键值
-	 * @since 1.0
 	 */
+	@SuppressWarnings("unchecked")
 	public static <T> T getValue(final String key, final Map<String, Object> yamlMap) {
 		String[] keys = key.split("\\.");
 		// 初始化配置映射对象
@@ -84,7 +83,6 @@ public class YamlUtils {
 	 * @param key 键名，如：xxx.xxx.xxx
 	 * @param yamlStr yaml字符串
 	 * @return 键值
-	 * @since 1.0
 	 */
 	public static <T> T getValue(final String key, final String yamlStr) {
 		return getValue(key, parseYaml(yamlStr));
@@ -96,7 +94,6 @@ public class YamlUtils {
 	 * @param key 键名，如：xxx.xxx.xxx
 	 * @param yamlFile yaml文件
 	 * @return 键值
-	 * @since 1.0
 	 */
 	public static <T> T getValue(final String key, final File yamlFile) throws FileNotFoundException {
 		return getValue(key, parseYaml(yamlFile));
@@ -108,7 +105,6 @@ public class YamlUtils {
 	 * @param key 键名，如：xxx.xxx.xxx
 	 * @param stream yaml输入流
 	 * @return 键值
-	 * @since 1.0
 	 */
 	public static <T> T getValue(final String key, final  InputStream stream) {
 		return getValue(key, parseYaml(stream));
@@ -119,7 +115,6 @@ public class YamlUtils {
 	 *
 	 * @param key 配置名称，如xxx.xxx.xxx
 	 * @return 键值是否为空
-	 * @since 1.0
 	 */
 	public static boolean existKey(final String key, final Map<String, Object> configMap) {
 		return getValue(key, configMap) != null;
@@ -130,7 +125,6 @@ public class YamlUtils {
 	 *
 	 * @param key 配置名称，如xxx.xxx.xxx
 	 * @return 键值是否为空
-	 * @since 1.0
 	 */
 	public static boolean existKey(final String key, final String yamlStr) {
 		return getValue(key, yamlStr) != null;
@@ -141,7 +135,6 @@ public class YamlUtils {
 	 *
 	 * @param key 配置名称，如xxx.xxx.xxx
 	 * @return 键值是否为空
-	 * @since 1.0
 	 */
 	public static boolean existKey(final String key, final File yamlFile) throws FileNotFoundException {
 		return getValue(key, yamlFile) != null;
@@ -152,7 +145,6 @@ public class YamlUtils {
 	 *
 	 * @param key 配置名称，如xxx.xxx.xxx
 	 * @return 键值是否为空
-	 * @since 1.0
 	 */
 	public static boolean existKey(final String key, final InputStream stream) {
 		return getValue(key, stream) != null;
@@ -163,7 +155,6 @@ public class YamlUtils {
 	 *
 	 * @param yamlMap yaml映射
 	 * @return yaml字符串
-	 * @since 1.0
 	 */
 	public static String toString(final Map<String, Object> yamlMap) {
 		Yaml yaml = new Yaml();
@@ -175,7 +166,6 @@ public class YamlUtils {
 	 *
 	 * @param yamlMap yaml映射
 	 * @param writer 流写入器
-	 * @since 1.0
 	 */
 	public static void write(final Map<String, Object> yamlMap, final Writer writer) {
 		Yaml yaml = new Yaml();

@@ -32,9 +32,10 @@ import java.rmi.RemoteException;
  * </pre>
  * <p>
  *
- * @author pangju
- * @version 1.0 2020-4-4
+ * @author 胖橘
+ * @version 1.0
  * @since 1.0
+ *
  * @see Call
  */
 public class CallBuilder {
@@ -208,6 +209,7 @@ public class CallBuilder {
      * @param returnClass 返回值对应JAVA类
      * @param parameters 请求参数
      */
+    @SuppressWarnings("unchecked")
     public <T> T invoke(QName returnType, Class<T> returnClass, Object... parameters) throws RemoteException {
         this.call.setReturnType(returnType, returnClass);
         return (T) call.invoke(parameters);
@@ -234,6 +236,7 @@ public class CallBuilder {
      * @return 请求结果
      * @throws RemoteException 请求错误时抛出
      */
+    @SuppressWarnings("unchecked")
     public <T> T invoke(Class<T> returnType, Object... parameters) throws RemoteException {
         this.call.setReturnClass(returnType);
         return (T) call.invoke(parameters);

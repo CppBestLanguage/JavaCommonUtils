@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
  * @author 胖橘
  * @version 1.0
  * @since 1.0
+ *
+ * @see net.sf.cglib.beans.BeanCopier
  */
 public class BeanUtils {
     /**

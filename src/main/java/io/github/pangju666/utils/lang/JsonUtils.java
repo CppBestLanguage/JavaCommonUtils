@@ -12,11 +12,10 @@ import java.util.*;
  *
  * @author 胖橘
  */
-public final class JsonUtils {
-    private static final Gson gson;
+public class JsonUtils {
+    private static final Gson DEFAULT_GSON = new GsonBuilder().create();
 
-    static {
-        gson = new GsonBuilder().create();
+    protected JsonUtils() {
     }
 
     /**
@@ -27,7 +26,7 @@ public final class JsonUtils {
      * @return 转换后的java对象
      */
     public static <T> T fromJson(JsonElement element) {
-        return fromJson(element, gson);
+        return fromJson(element, DEFAULT_GSON);
     }
 
     /**
@@ -42,6 +41,14 @@ public final class JsonUtils {
         return fromJson(element, createGson(deserializer));
     }
 
+    /**
+     * json对象转换为java对象
+     *
+     * @param element      json对象
+     * @param gson         gson对象
+     * @param <T>          待转换对象类型
+     * @return 转换后的java对象
+     */
     public static <T> T fromJson(JsonElement element, Gson gson) {
         return gson.fromJson(element, new TypeToken<T>() {}.getType());
     }
@@ -54,7 +61,7 @@ public final class JsonUtils {
      * @return 转换后的java对象
      */
     public static <T> JsonElement toJson(T javaBean) {
-        return toJson(javaBean, gson);
+        return toJson(javaBean, DEFAULT_GSON);
     }
 
     /**
@@ -69,7 +76,15 @@ public final class JsonUtils {
         return toJson(javaObject, createGson(serializer));
     }
 
-    private static <T> JsonElement toJson(T javaObject, Gson gson) {
+    /**
+     * java对象转换为json对象
+     *
+     * @param javaObject java对象
+     * @param gson gson对象
+     * @param <T>        待转换对象类型
+     * @return 转换后的java对象，为空则返回空json对象
+     */
+    public static <T> JsonElement toJson(T javaObject, Gson gson) {
         if (javaObject == null) {
             return new JsonObject();
         }
@@ -79,30 +94,34 @@ public final class JsonUtils {
     /**
      * json数组转换为对象集合
      *
-     * @param jsonArray json数组
+     * @param array json数组
      * @param <T>       待转换对象类型
      * @return 转换后的集合，数组为空或没有元素时返回一个空的集合
      */
-    public static <T> List<T> fromJsonArray(JsonArray jsonArray) {
-        return fromJsonArray(jsonArray, gson);
-    }
-
-    public static <T> List<T> fromJsonArray(JsonArray array, TypeToken<List<T>> typeToken) {
-        return fromJsonArray(array, gson, typeToken);
+    public static <T> List<T> fromJsonArray(JsonArray array) {
+        return fromJsonArray(array, DEFAULT_GSON);
     }
 
     /**
      * json数组转换为对象集合
      *
-     * @param jsonArray    json数组
+     * @param array    json数组
      * @param deserializer json反序列化器
      * @param <T>          待转换对象类型
      * @return 转换后的集合，数组为空或没有元素时返回一个空的集合
      */
-    public static <T> List<T> fromJsonArray(JsonArray jsonArray, JsonDeserializer<T> deserializer) {
-        return fromJsonArray(jsonArray, createGson(deserializer));
+    public static <T> List<T> fromJsonArray(JsonArray array, JsonDeserializer<T> deserializer) {
+        return fromJsonArray(array, createGson(deserializer));
     }
 
+    /**
+     * json数组转换为对象集合
+     *
+     * @param array    json数组
+     * @param gson     gson对象
+     * @param <T>          待转换对象类型
+     * @return 转换后的集合，数组为空或没有元素时返回一个空的集合
+     */
     public static <T> List<T> fromJsonArray(JsonArray array, Gson gson) {
         if (array != null && array.size() != 0) {
             return gson.fromJson(array, new TypeToken<List<T>>() {}.getType());
@@ -110,62 +129,60 @@ public final class JsonUtils {
         return Collections.emptyList();
     }
 
-    public static <T> List<T> fromJsonArray(JsonArray array, Gson gson, TypeToken<List<T>> typeToken) {
-        if (array != null && array.size() != 0) {
-            return gson.fromJson(array, typeToken.getType());
-        }
-        return Collections.emptyList();
-    }
-
     /**
      * 对象集合转json数组
      *
-     * @param javaList 对象集合
+     * @param list 对象集合
      * @param <T>      待转换对象类型
      * @return 转换后的json数组，集合为空或没有元素时返回一个空的json数组
      */
-    public static <T> JsonArray toJsonArray(List<T> javaList) {
-        return toJsonArray(javaList, gson);
+    public static <T> JsonArray toJsonArray(List<T> list) {
+        return toJsonArray(list, DEFAULT_GSON);
     }
 
     /**
      * 对象集合转json数组
      *
      * @param serializer json序列化器
-     * @param javaList   对象集合
+     * @param list   对象集合
      * @param <T>        待转换对象类型
      * @return 转换后的json数组，集合为空或没有元素时返回一个空的json数组
      */
-    public static <T> JsonArray toJsonArray(List<T> javaList, JsonSerializer<T> serializer) {
-        return toJsonArray(javaList, createGson(serializer));
+    public static <T> JsonArray toJsonArray(List<T> list, JsonSerializer<T> serializer) {
+        return toJsonArray(list, createGson(serializer));
     }
 
-    public static <T> JsonArray toJsonArray(List<T> objectList, Gson gson) {
-        if (objectList != null && !objectList.isEmpty()) {
-            JsonElement jsonElement = gson.toJsonTree(objectList, new TypeToken<List<T>>() {
-            }.getType());
+    /**
+     * json数组转换为对象集合
+     *
+     * @param list    对象集合
+     * @param gson     gson对象
+     * @param <T>          待转换对象类型
+     * @return 转换后的json数组，集合为空或没有元素时返回一个空的json数组
+     */
+    public static <T> JsonArray toJsonArray(List<T> list, Gson gson) {
+        if (ObjectUtils.isNotEmpty(list)) {
+            JsonElement jsonElement = gson.toJsonTree(list, new TypeToken<List<T>>() {}.getType());
             return jsonElement.getAsJsonArray();
         }
         return new JsonArray();
     }
 
-    private static <T> Gson createGson(JsonSerializer<T> serializer) {
+    protected static <T> Gson createGson(JsonSerializer<T> serializer) {
         return new GsonBuilder()
-                .registerTypeAdapter(getActualType(new TypeToken<T>() {
-                }), serializer)
+                .registerTypeAdapter(getActualType(new TypeToken<T>() {}), serializer)
                 .setPrettyPrinting()
                 .create();
     }
 
-    private static <T> Gson createGson(JsonDeserializer<T> serializer) {
+    protected static <T> Gson createGson(JsonDeserializer<T> deserializer) {
         return new GsonBuilder()
-                .registerTypeAdapter(getActualType(new TypeToken<T>() {
-                }), serializer)
+                .registerTypeAdapter(getActualType(new TypeToken<T>() {}), deserializer)
                 .setPrettyPrinting()
                 .create();
     }
 
-    private static <T> Type getActualType(TypeToken<T> typeToken) {
+    protected static <T> Type getActualType(TypeToken<T> typeToken) {
         Type typeClass = typeToken.getClass().getGenericSuperclass();
         return ((ParameterizedType) typeClass).getActualTypeArguments()[0];
     }

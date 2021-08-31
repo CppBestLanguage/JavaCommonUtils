@@ -7,10 +7,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * 正则工具类, 只用于Unicode编码, 默认匹配空白字符
+ * 正则工具类
  *
  * @author 胖橘
- * @version 1.0 2020-10-30
+ * @version 1.0
  * @since 1.0
  */
 public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
@@ -113,7 +113,7 @@ public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
     /** 强密码, 数字、字母和特殊字符组成 */
     public static final Pattern STRONG_PASSWORD = Pattern.compile("[a-zA-z\\d`~!@#$%^&*()_\\-+={}\\[\\];:'\"|/?,<>\\\\]+");
 
-    private RegExUtils() {
+    protected RegExUtils() {
     }
 
     /**
@@ -122,7 +122,6 @@ public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
      * @param pattern 正则表达式
      * @param input 输入字符串
      * @return 是否匹配
-     * @since 1.0
      */
     public static boolean isMatch(final Pattern pattern, final CharSequence input) {
         return pattern.matcher(input).matches();
@@ -134,7 +133,6 @@ public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
      * @param pattern 正则表达式
      * @param input 输入字符串
      * @return 匹配的字符串数组
-     * @since 1.0
      */
     public static String[] match(final Pattern pattern, final CharSequence input) {
         Matcher mather = pattern.matcher(input);
@@ -153,7 +151,6 @@ public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
      * @param input 输入字符串
      * @param limit 匹配上限
      * @return 匹配的字符串数组
-     * @since 1.0
      */
     public static String[] match(final Pattern pattern, final CharSequence input, final int limit) {
         String[] result = match(pattern, input);
@@ -169,7 +166,6 @@ public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
      * @param pattern 正则表达式
      * @param input 输入字符串
      * @return 匹配的次数
-     * @since 1.0
      */
     public static int count(final Pattern pattern, final CharSequence input) {
         return match(pattern, input).length;
@@ -180,7 +176,6 @@ public class RegExUtils extends org.apache.commons.lang3.RegExUtils {
      *
      * @param pattern 正则表达式
      * @return 正则表达式字符串
-     * @since 1.0
      */
     public static String getRegex(final Pattern pattern) {
         return pattern.toString();

@@ -1,6 +1,6 @@
 package io.github.pangju666.utils.security;
 
-import io.github.pangju666.utils.sys.RandomUtils;
+import io.github.pangju666.utils.common.RandomUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
  * @version 1.1 2020-3-31 增加验证图像尺寸参数选择
  * @since 1.0
  */
+@Deprecated
 public final class VerificationImageUtils {
     public VerificationImageUtils() {}
 

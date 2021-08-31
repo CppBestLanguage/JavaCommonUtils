@@ -1,15 +1,17 @@
 package io.github.pangju666.utils.office;
 
 import io.github.pangju666.utils.io.FileUtils;
+import io.github.pangju666.utils.io.FilenameUtils;
 
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.InvalidPathException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Function;
+import java.util.function.ObjIntConsumer;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFCloneUtility;
@@ -28,23 +30,40 @@ import org.apache.pdfbox.rendering.PDFRenderer;
 /**
  * PDF工具类
  *
- * @author pangju666
- * @version 1.0 2021-7-21
+ * @author 胖橘
+ * @version 1.0
  * @since 1.0
  */
 public class PdfUtils {
     private static final Set<String> PDF_FILE_EXTENSION_SET = new HashSet<>(Arrays.asList("pdf", "PDF"));
-    private static final String PDF_FILE_EXTENSION = ".pdf";
 
+    /**
+     * 判断是否为PDF文件
+     *
+     * @param file 文件
+     * @return 是否为PDF文件
+     */
     public static boolean isPdfFile(File file) {
         return isPdfFile(file.getName());
     }
 
+    /**
+     * 判断是否为PDF文件
+     *
+     * @param filePath 文件路径
+     * @return 是否为PDF文件
+     */
     public static boolean isPdfFile(String filePath) {
         String fileExtension = FilenameUtils.getExtension(filePath);
         return PDF_FILE_EXTENSION_SET.contains(fileExtension);
     }
 
+    /**
+     * 创建新文档，并拷贝源文档的属性至新文档
+     *
+     * @param sourceDocument 源文档
+     * @return 创建的新文档
+     */
     public static PDDocument createFromDocument(PDDocument sourceDocument) {
         PDDocument document = new PDDocument();
         // 复制文档属性
@@ -103,16 +122,16 @@ public class PdfUtils {
     }
 
     public static void getDocumentPagesAsImage(PDDocument document,
-                                               PageAction<BufferedImage> action) throws IOException {
+                                               ObjIntConsumer<BufferedImage> action) throws IOException {
         getDocumentPagesAsImage(document, 72, action);
     }
 
     public static void getDocumentPagesAsImage(PDDocument document, float dpi,
-                                               PageAction<BufferedImage> action) throws IOException {
+                                               ObjIntConsumer<BufferedImage> action) throws IOException {
         PDFRenderer renderer = new PDFRenderer(document);
         for (int i = 0; i < document.getNumberOfPages(); i++) {
             BufferedImage image = renderer.renderImageWithDPI(i, dpi);
-            action.apply(image, i);
+            action.accept(image, i);
         }
     }
 
@@ -332,9 +351,5 @@ public class PdfUtils {
             // TODO 在拆分结果中保留指向页面的链接
             annotation.setPage(null);
         }
-    }
-
-    public interface PageAction<T> {
-        void apply(T t, int index) throws IOException;
     }
 }

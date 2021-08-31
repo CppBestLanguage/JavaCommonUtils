@@ -1,6 +1,8 @@
 package io.github.pangju666.utils.office;
 
 import io.github.pangju666.utils.io.FileUtils;
+import io.github.pangju666.utils.io.FilenameUtils;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -13,8 +15,8 @@ import java.io.InputStream;
  * excel 工具包
  *
  * @author 胖橘
- * @version 1.0 2020-12-2
- * @since 1.1
+ * @version 1.0
+ * @since 1.0
  */
 public class ExcelUtils {
     private static final String XLS_TYPE = "xls";
@@ -24,7 +26,7 @@ public class ExcelUtils {
     }
 
     public Workbook getWorkbook(File file) throws IOException {
-        String fileType = FileUtils.getFileType(file.getName());
+        String fileType = FilenameUtils.getExtension(file.getName());
         InputStream stream = FileUtils.openInputStream(file);
         switch (fileType) {
             case XLS_TYPE: return new HSSFWorkbook(stream);

@@ -1,4 +1,4 @@
-package io.github.pangju666.utils.sys;
+package io.github.pangju666.utils.common;
 
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -11,10 +11,7 @@ import java.util.Date;
  * 日期工具类
  *
  * @author 胖橘
- * @version 1.0 2020-8-20
- * @version 1.1 2020-8-28 新增根据日期字符串获取日期方法
- * @version 1.2 2020-9-25 新增获取当前系统日期字符串方法
- * @version 1.3 2020-9-10-31 继承org.apache.commons.lang3.time.DateUtils，精简部分已存在方法
+ * @version 1.0
  * @since 1.0
  */
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
@@ -51,7 +48,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * 获取当前系统日期字符串
      *
      * @return 当前系统时间字符串，格式为：yyyy-MM-dd
-     * @since 1.2
      */
     public static String getCurrentDateStr() {
         return formatDate(null, DATE_FORMAT);
@@ -61,7 +57,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * 获取当前系统日期字符串
      *
      * @return 当前系统时间字符串，格式为：yyyy-MM-dd-HH:mm:ss
-     * @since 1.2
      */
     public static String getCurrentDateTimeStr() {
         return formatDate(null, DATETIME_FORMAT);
@@ -72,7 +67,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param date 日期，为空则使用当前日期
      * @return 格式化后的时间字符串
-     * @since 1.0
      */
     public static String formatDate(Date date, final String pattern) {
         date = ObjectUtils.defaultIfNull(date, new Date());
@@ -85,7 +79,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param date 日期
      * @return 当前日期总毫秒数
-     * @since 1.3
      */
     public static long toMilliseconds(final Date date) {
         Calendar calendar = Calendar.getInstance();
@@ -98,7 +91,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param milliseconds 毫秒数
      * @return 当前毫秒数所表示的日期
-     * @since 1.3
      */
     public static Date fromMillisecond(long milliseconds) {
         Calendar calendar = Calendar.getInstance();
@@ -112,7 +104,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @param startDate 日期
      * @param endDate 另一日期
      * @return 相差结果，取毫秒
-     * @since 1.3
      */
     public static long subTime(final Date startDate, final Date endDate) {
         return subTime(startDate, endDate, Base.MILLISECOND);
@@ -125,7 +116,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @param endDate 另一日期
      * @param base 结果类型，如天，小时，分钟等
      * @return 相差结果, 如果相等或起始日期大于结束日期则返回0
-     * @since 1.3
      */
     public static long subTime(Date startDate, Date endDate, final Base base) {
         startDate = ObjectUtils.defaultIfNull(startDate, new Date());
@@ -147,7 +137,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param date 日期
      * @return 布尔值
-     * @since 1.3
      */
     public static boolean isLeapYear(final Date date) {
         Calendar calendar = Calendar.getInstance();
@@ -161,7 +150,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param str 字符串日期，格式为：yyyy-MM-dd
      * @return 布尔值
-     * @since 1.3
      */
     public static boolean isLeapYear(final String str) throws ParseException {
         Date date = parseDate(str, DATE_FORMAT);
@@ -174,7 +162,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      * @param str 字符串日期
      * @param pattern 时间序列化格式字符串，如：yyyy-MM-dd
      * @return 布尔值
-     * @since 1.3
      */
     public static boolean isLeapYear(final String str, final String pattern) throws ParseException {
         Date date = parseDate(str, pattern);
@@ -186,7 +173,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param date 日期
      * @return 返回一天的开始时间
-     * @since 1.3
      */
     public static Date getInitialDateTheDay(final Date date){
         Calendar instance = Calendar.getInstance();
@@ -202,7 +188,6 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
      *
      * @param date 日期
      * @return 返回一天的结束时间
-     * @since 1.3
      */
     public static Date getEndDateTheDay(final Date date){
         Calendar instance = Calendar.getInstance();

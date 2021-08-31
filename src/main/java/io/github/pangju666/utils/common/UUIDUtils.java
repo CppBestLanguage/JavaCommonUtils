@@ -1,4 +1,4 @@
-package io.github.pangju666.utils.security;
+package io.github.pangju666.utils.common;
 
 import java.util.UUID;
 
