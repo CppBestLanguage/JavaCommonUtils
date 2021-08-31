@@ -62,11 +62,8 @@ public class FilenameUtils extends org.apache.commons.io.FilenameUtils {
     }
 
     /**
-     * 获取文件MINE类型
-     *
-     * @apiNote 此方法根据文件后缀进行识别，支持类型较少，
-     * 如果需要获取精确的MineType，
-     * 建议使用{@link FileUtils#getMineType(File)}进行获取
+     * 获取文件MINE类型, 此方法根据文件后缀进行识别，支持类型较少 <br />
+     * 如果需要获取精确的MineType，建议使用{@link FileUtils#getMineType(File)}进行获取
      *
      * @param fileName 文件名
      * @return 文件的MINE类型
