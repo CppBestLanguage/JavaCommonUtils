@@ -16,6 +16,10 @@
         <gpg.passphrase>91291358</gpg.passphrase>
     </properties>
 
+    <name>Java Utils</name>
+    <description>Some common java tool classes</description>
+    <url>https://github.com/pangju666/java-utils</url>
+
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
